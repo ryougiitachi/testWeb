@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xmlns="http://java.sun.com/xml/ns/javaee" 
+		xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
+		xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" 
+		id="testWebApp" version="3.0">
+		
+	<display-name>testWeb</display-name>
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+		<welcome-file>index.htm</welcome-file>
+		<welcome-file>index.jsp</welcome-file>
+		<welcome-file>default.html</welcome-file>
+		<welcome-file>default.htm</welcome-file>
+		<welcome-file>default.jsp</welcome-file>
+		<welcome-file>pages/default.jsp</welcome-file>
+	</welcome-file-list>
+	
+	<!-- not necessary? By default, web server search *.tld files in /WEB-INF.-->
+	<!-- But it seems necessary to add several *.tld files. -->
+	<!-- 
+		When starting up, the following message will be showed. To be invested...
+		Jun 09, 2017 4:44:22 PM org.apache.catalina.startup.TaglibUriRule body
+		INFO: TLD skipped. URI: http://java.sun.com/jstl/core is already defined
+	 -->
+	<jsp-config>
+		<taglib>
+			<taglib-uri>http://java.sun.com/jsp/jstl/core</taglib-uri>
+			<taglib-location>/WEB-INF/jstl/c.tld</taglib-location>
+		</taglib>
+		<taglib>
+			<taglib-uri>http://java.sun.com/jsp/jstl/fmt</taglib-uri>
+			<taglib-location>/WEB-INF/jstl/fmt.tld</taglib-location>
+		</taglib>
+		<taglib>
+			<taglib-uri>http://java.sun.com/jsp/jstl/functions</taglib-uri>
+			<taglib-location>/WEB-INF/jstl/fn.tld</taglib-location>
+		</taglib>
+		<taglib>
+			<taglib-uri>http://java.sun.com/jsp/jstl/sql</taglib-uri>
+			<taglib-location>/WEB-INF/jstl/sql.tld</taglib-location>
+		</taglib>
+		<taglib>
+			<taglib-uri>http://java.sun.com/jsp/jstl/xml</taglib-uri>
+			<taglib-location>/WEB-INF/jstl/x.tld</taglib-location>
+		</taglib>
+	</jsp-config>
+	
+	<context-param>
+		<!-- spring parameter? -->
+		<param-name>webAppRootKey</param-name>
+		<!-- default value is webapp.root -->
+		<param-value>itachi.test.web</param-value>
+	</context-param>
+	<context-param>
+		<!-- spring parameter? It doesn't work without spring framework. -->
+		<!-- When using eclipse to start up web server, need to set working directory to a correct location, such as, current directory. -->
+		<!-- 
+				Otherwise, some files are not found 
+				java.io.FileNotFoundException: WEB-INF\etc\log4j.xml 
+				(The system cannot find the path specified) 
+		-->
+		<param-name>log4jConfiguration</param-name><!-- log4jConfiguration / log4jConfigLocation-->
+		<param-value>/WEB-INF/etc/log4j.xml</param-value><!-- no need to add root path "/"? -->
+	</context-param>
+	
+	<!-- Order of loading is listener > filter > servlet -->
+	<!-- Order of executing is listener > filter > servlet -->
+	<!-- Is there order of destroying? -->
+	<!-- But it doesn't matter what order these 3 classes are configured into web.xml using. -->
+	<!-- In other word, even if listener is configured after filter, listener will still start up at first. -->
+	
+	<!-- listener -->
+	<listener>
+		<description>
+			This listener is to test whether the order of configuration in web.xml has influence on 
+			the order of loading and executing. 
+			As a consequence, it's yes. 
+			In other word, first configured, first load and execute, when initialising.
+			And in reserve when destroying. 
+		</description>
+		<!-- 2 different configured listeners, even if with the same display name, will be loaded by each. -->
+		<!-- In other word, this listener with TestingRequestListener, eventually, will be loaded. -->
+		<display-name>TestingOrderListener</display-name>
+		<listener-class>per.itachi.test.listener.TestingOrderListener</listener-class>
+	</listener>
+	<listener>
+		<display-name>TestingRequestListener</display-name>
+		<listener-class>per.itachi.test.listener.TestingRequestListener</listener-class>
+	</listener>
+	<listener>
+		<!-- sequence of elements, unexpectedly -->
+		<description>
+			The same listener won't be loaded(instantiated) twice in the same one running web server.
+		</description>
+		<display-name>TestingRequestListener</display-name>
+		<listener-class>per.itachi.test.listener.TestingRequestListener</listener-class>
+	</listener>
+	<listener>
+		<display-name>TestingSessionListener</display-name>
+		<listener-class>per.itachi.test.listener.TestingSessionListener</listener-class>
+	</listener>
+
+	<!-- filter -->
+	<filter>
+		<filter-name>TestingFilter</filter-name>
+		<filter-class>per.itachi.test.filter.TestingFilter</filter-class>
+	</filter>
+	<filter-mapping>
+		<filter-name>TestingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
+	<!-- It is said that servlet just matches once? precise matching pattern?-->
+	<servlet>
+		<servlet-name>TestingServlet</servlet-name>
+		<servlet-class>per.itachi.test.servlet.TestingServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>TestingServlet</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+
+	<session-config>
+		<!-- 0 means "never time-out"? -->
+		<session-timeout>15</session-timeout>
+	</session-config>
+</web-app>
