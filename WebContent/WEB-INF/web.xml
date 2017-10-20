@@ -60,8 +60,26 @@
 				java.io.FileNotFoundException: WEB-INF\etc\log4j.xml 
 				(The system cannot find the path specified) 
 		-->
-		<param-name>log4jConfiguration</param-name><!-- log4jConfiguration / log4jConfigLocation-->
-		<param-value>/WEB-INF/etc/log4j.xml</param-value><!-- no need to add root path "/"? -->
+		<param-name></param-name><!-- log4jConfiguration / log4jConfigLocation-->
+		<param-value></param-value><!-- no need to add root path "/"? -->
+	</context-param>
+	<!-- Test what will happen if there are 2 same context parameters in web.xml -->
+	<!-- As a result, tomcat doesn't report error, and value will be the latest one. -->
+	<!-- For this instant, it is /WEB-INF/etc/log4j.properties -->
+<!-- 	<context-param> -->
+<!-- 		<param-name>log4jConfigLocation</param-name> -->
+<!-- 		<param-value>/WEB-INF/etc/log4j.xml</param-value> -->
+<!-- 	</context-param> -->
+<!-- 	<context-param> -->
+<!-- 		<param-name>log4jConfigLocation</param-name> -->
+<!-- 		<param-value>/WEB-INF/etc/log4j.properties</param-value> -->
+<!-- 	</context-param> -->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>
+			/WEB-INF/etc/springContext.xml,
+			/WEB-INF/etc/springContext-orm.xml
+		</param-value>
 	</context-param>
 	
 	<!-- Order of loading is listener > filter > servlet -->
@@ -100,6 +118,17 @@
 		<display-name>TestingSessionListener</display-name>
 		<listener-class>per.itachi.test.listener.TestingSessionListener</listener-class>
 	</listener>
+	<listener>
+		<display-name>TestingContextListener</display-name>
+		<listener-class>per.itachi.test.listener.TestingContextListener</listener-class>
+	</listener>
+
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<listener>
+		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+	</listener>
 
 	<!-- filter -->
 	<filter>
@@ -116,13 +145,39 @@
 		<servlet-name>TestingServlet</servlet-name>
 		<servlet-class>per.itachi.test.servlet.TestingServlet</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>springmvc</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/etc/springContext-mvc.xml</param-value>
+		</init-param>
+	</servlet>
+	
+	<!-- 
+		url-pattern 
+		/ 和 /* 都能够匹配所有资源，包括扩展名，/*本身属于路径匹配，路径为/ 
+		http://www.cnblogs.com/51kata/p/5152400.html
+		精确匹配(非/和不带*的)、扩展名匹配(*.do)、路径匹配(/spring/*)、任意匹配
+		扩展名与路径互斥，启动时报错
+		优先级：精确 > 最长路径 > 扩展名
+	-->
+<!-- 	<servlet-mapping> -->
+<!-- 		<servlet-name>TestingServlet</servlet-name> -->
+<!-- 		<url-pattern>/</url-pattern> -->
+<!-- 	</servlet-mapping> -->
 	<servlet-mapping>
-		<servlet-name>TestingServlet</servlet-name>
-		<url-pattern>/*</url-pattern>
+		<servlet-name>springmvc</servlet-name>
+		<url-pattern>/springmvc/*</url-pattern>
 	</servlet-mapping>
 
 	<session-config>
-		<!-- 0 means "never time-out"? -->
+		<!-- value <=0, 0/-1 means "never time-out" unless timeout manually(?) -->
+		<!-- 1.HttpSession.setMaxInactiveInterval(paramInt). The time unit of paramInt is second. -->
+		<!-- 2.session-timeout in web application. The time unit of paramInt is minute. -->
+		<!-- 3.session-timeout in web server, such as, tomcat. -->
+		<!-- Priority is 1 > 2 > 3 -->
+		<!-- As for tomcat, the default value is 30min -->
 		<session-timeout>15</session-timeout>
 	</session-config>
 </web-app>

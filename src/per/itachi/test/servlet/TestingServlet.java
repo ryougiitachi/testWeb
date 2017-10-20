@@ -57,7 +57,7 @@ public class TestingServlet extends HttpServlet {
 			throws ServletException, IOException {
 		//HTTP Status 405 - HTTP method GET is not supported by this URL
 //		super.doGet(req, resp);
-		logger.debug("Servlet {} gets a GET request {}. ", getClass().getSimpleName());
+		logger.debug("Servlet {} gets a GET request {}. ", getClass().getSimpleName(), req);
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class TestingServlet extends HttpServlet {
 			throws ServletException, IOException {
 		//HTTP Status 405 - HTTP method PUT is not supported by this URL
 //		super.doPut(req, resp);//super method shouldn't be executed.
-		logger.debug("Servlet {} gets a PUT request {}. ", getClass().getSimpleName());
+		logger.debug("Servlet {} gets a PUT request {}. ", getClass().getSimpleName(), req);
 	}
 
 	@Override

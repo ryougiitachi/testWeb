@@ -21,12 +21,12 @@ public class TestingRequestListener implements ServletRequestListener {
 	
 	@Override
 	public void requestInitialized(ServletRequestEvent event) {
-		logger.debug("Request {} has initialised. ", event.getSource());
+		logger.debug("Request {} has initialised. ", event.getServletRequest());
 //		System.out.println("Request {0} has initialised. ");
 	}
 
 	@Override
 	public void requestDestroyed(ServletRequestEvent event) {
-		logger.debug("Request {} has destroyed. ", event.getSource());
+		logger.debug("Request {} has destroyed. ", event.getServletRequest());
 	}
 }

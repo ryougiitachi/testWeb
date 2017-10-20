@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd  
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd  
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd  
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- spring注解自动注入 -->
+	<context:component-scan base-package="per.itachi.test.pojo.postgresql"></context:component-scan>
+
+	<!-- 引入外部属性文件 jndi? -->
+	<context:property-placeholder location="/WEB-INF/etc/jdbc.properties" /><!-- classpath:jdbc.properties -->
+
+	<!-- 添加c3p0数据库连接池 bean -->
+	<bean id="myDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<!-- 数据库连接配置 -->
+		<property name="driverClass" value="${jdbc.postgresql.driver}" />
+		<property name="jdbcUrl" value="${jdbc.postgresql.url}" />
+		<property name="user" value="${jdbc.postgresql.username}" />
+		<property name="password" value="${jdbc.postgresql.password}" />
+		<!-- 每300秒检查所有连接池中的空闲连接 -->
+		<property name="idleConnectionTestPeriod" value="300"></property>
+		<!-- 最大空闲时间,900秒内未使用则连接被丢弃。若为0则永不丢弃 -->
+		<property name="maxIdleTime" value="900"></property>
+		<!-- 最大连接数 -->
+		<property name="maxPoolSize" value="2"></property>
+	</bean>
+	<!-- 添加sessionFactory bean，注意，该类是Spring提供的 -->
+	<!-- I think it is better to use default(singleton) instead of scope="prototype" as scope -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<!-- 注入连接池，包含了数据库用户名，密码等等信息 -->
+		<property name="dataSource" ref="myDataSource" />
+
+		<!-- 配置Hibernate的其他的属性 -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.connection.autocommit">false</prop>
+				<!-- 开机自动生成表 -->
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+			</props>
+		</property>
+		<!-- 引用*.hbm.xml映射文件 -->
+<!-- 		<property name="mappingResources"> -->
+<!-- 			<list> -->
+<!-- 				<value>/WEB-INF/etc/mapping/User.hbm.xml</value> -->
+<!-- 			</list> -->
+<!-- 		</property> -->
+		<property name="mappingLocations">
+			<list>
+				<value>/WEB-INF/etc/mapping/User.hbm.xml</value>
+			</list>
+		</property>
+		<!-- 引用*.hbm.xml映射文件夹 -->
+<!-- 		<property name="mappingDirectoryLocations"> -->
+<!-- 			<list> -->
+<!-- 				<value>/WEB-INF/etc/mapping</value> -->
+<!-- 			</list> -->
+<!-- 		</property> -->
+	</bean>
+</beans>
