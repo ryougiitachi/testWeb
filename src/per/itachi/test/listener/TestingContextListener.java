@@ -23,6 +23,6 @@ public class TestingContextListener implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent event) {
-		logger.debug("Listener {} has constructed. ", getClass().getSimpleName());
+		logger.debug("Listener {} has destroyed. ", getClass().getSimpleName());
 	}
 }

@@ -60,7 +60,7 @@
 		<appender-ref ref="stdout"/>
 	</category>
 	<category name="org.springframework">
-		<priority value="info"/>
+		<priority value="debug"/>
 	</category>
 	<category name="org.hibernate">
 		<priority value="info"/>

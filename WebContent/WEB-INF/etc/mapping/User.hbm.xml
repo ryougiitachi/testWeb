@@ -12,7 +12,7 @@
 		http://blog.csdn.net/yuhui123999/article/details/51886531
 	 -->
 	
-	<class name="User" table="T_USER">
+	<class name="User" table="T_USER" lazy="true">
 		<id name="userID" column="USER_ID" type="long"></id>
 <!-- 		<property name="userID" column="USER_ID"></property> -->
 		<property name="username" column="USERNAME"></property>

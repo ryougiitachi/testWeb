@@ -68,4 +68,35 @@
 <!-- 			</list> -->
 <!-- 		</property> -->
 	</bean>
+	<bean id="trxMgr" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	<!-- 
+		Spring transaction management Spring事务管理 
+		tx:annotation-driven是必须的(?)
+		
+	-->
+	<tx:annotation-driven transaction-manager="trxMgr" /><!-- transaction-manager doesn't make differences? -->
+	<tx:advice id="trxAdvice" transaction-manager="trxMgr">
+		<tx:attributes>
+			<tx:method name="add*" propagation="REQUIRED"/>
+			<tx:method name="insert*" propagation="REQUIRED"/>
+			<tx:method name="update*" propagation="REQUIRED"/>
+			<tx:method name="delete*" propagation="REQUIRED" />
+			<tx:method name="select*" read-only="true"/>
+			<tx:method name="find*" read-only="true"/>
+			<tx:method name="get*" read-only="true"/>
+			<tx:method name="query*" read-only="true"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<!-- 
+		Spring AOP Spring面向页面编程
+		在service层添加事务(?)
+	 -->
+	<aop:config expose-proxy="true">
+		<aop:pointcut expression="execution(* per.itachi.test.service.impl.*.*(..))" id="pointcut" />
+		<aop:advisor advice-ref="trxAdvice" pointcut-ref="pointcut" />
+	</aop:config>
 </beans>

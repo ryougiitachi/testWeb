@@ -16,12 +16,15 @@ import per.itachi.test.service.UserService;
 public class UserController {
 	
 	@Autowired
-	@Qualifier("defaultUserService")
+	@Qualifier("defaultUserService")//("per.itachi.test.service.impl.UserServiceImpl") not ok
 	private UserService userService;
 
-	@RequestMapping(path="/springmvc/testUser", method={RequestMethod.GET})
+	/**
+	 * The actual url path is /springmvc/testUser because of /springmvc/* added in web.xml
+	 * */
+	@RequestMapping(path="/testUser", method={RequestMethod.GET})
 	public ModelAndView testSpringMvcUser() {
-		ModelAndView mvc = new ModelAndView("user-springmvc");
+		ModelAndView mvc = new ModelAndView("/user-springmvc");
 		User userLoad = userService.load(1l);
 		User userGet = userService.get(2l);
 		List<User> userFindAll = userService.findAll();

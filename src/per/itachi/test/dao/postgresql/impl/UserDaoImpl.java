@@ -23,11 +23,24 @@ public class UserDaoImpl implements UserDao {
 		return sessionFactory.getCurrentSession();
 	}
 	
+	/**
+	 * 有可能会出现这个错误could not initialize proxy - no Session，
+	 * 因为Session.load出来的是一个代理对象，没有发sql语句<br/>
+	 * <br/>
+	 * 通过在mapping文件里将class设为lazy=false(默认为true)可以解决此问题，但这种方式会把所有内容加载出来，一般不推荐<br/>
+	 * <br/>
+	 * 可以通过在web.xml添加org.springframework.orm.hibernate5.support.OpenSessionInViewFilter解决，此时hibernate将不再管理事务，
+	 * spring管理session开关问题，只有当request过来得时候该filter获取一个session直到request结束session被释放
+	 * 这种方式符合"Open Session in View"<br/>
+	 * */
 	@Override
 	public User load(Long id) {
 		return getCurrentSession().load(User.class, id);
 	}
 
+	/**
+	 * 发送了sql语句，从数据库中查询后放到缓存中
+	 * */
 	@Override
 	public User get(Long id) {
 		return getCurrentSession().get(User.class, id);

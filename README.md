@@ -33,3 +33,5 @@ taglibs-standard-jstlel-1.2.5.jar.
 taglibs-standard-spec-1.2.5.jar.
 .
 .
+
+aspectjweaver-1.8.9.jar is required by spring-aop-4.3.9.RELEASE.jar
