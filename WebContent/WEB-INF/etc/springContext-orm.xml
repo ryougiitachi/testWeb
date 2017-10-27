@@ -74,12 +74,26 @@
 	
 	<!-- 
 		Spring transaction management Spring事务管理 
-		tx:annotation-driven是必须的(?)
-		
+		tx:annotation-driven主要用于加载@Transactional(?)，需要在dao或者service添加注解
+		tx:advice通过AOP方式切面注入管理事务，需要配置aop:config启用Spring AOP切面
+		tx:annotation-driven与tx:advice二选一即可，没有必要都用(?)
+		spring事务管理原理的简单讲解 http://www.cnblogs.com/fjdingsd/p/5632949.html
+		事务四特性 ACID Atomic, consistency, isolation, durability
 	-->
-	<tx:annotation-driven transaction-manager="trxMgr" /><!-- transaction-manager doesn't make differences? -->
+	<!-- transaction-manager doesn't make differences? -->
+<!-- 	<tx:annotation-driven transaction-manager="trxMgr" /> -->
 	<tx:advice id="trxAdvice" transaction-manager="trxMgr">
 		<tx:attributes>
+			<!-- tx:method中的属性除name以外皆非必须，
+				propagation 事务传播行为，默认值为REQUIRED，可在org.springframework.transaction.TransactionDefinition中查询
+				propagation 有可能是spring为了事务管理自创的机制，与数据库本身的功能无关。
+				isolation 事务隔离级别，默认值为DEFAULT(数据库的默认级别?)，可在org.springframework.transaction.TransactionDefinition中查询
+				timeout 事务超时时间，默认值为-1(不超时)，单位秒
+				read-only 事物是否只读，默认为false，若设置为只读则在处理增删改操作时候会报错失败
+				rollback-for 触发回滚的异常，以逗号分隔
+				no-rollback-for 不触发回滚的异常，以逗号分隔
+				默认情况下，任何RuntimeException将触发回滚，任何检查异常不触发回滚。
+			-->
 			<tx:method name="add*" propagation="REQUIRED"/>
 			<tx:method name="insert*" propagation="REQUIRED"/>
 			<tx:method name="update*" propagation="REQUIRED"/>
@@ -93,10 +107,11 @@
 	
 	<!-- 
 		Spring AOP Spring面向页面编程
+		Spring AOP原理简介http://www.importnew.com/24305.html
 		在service层添加事务(?)
 	 -->
 	<aop:config expose-proxy="true">
-		<aop:pointcut expression="execution(* per.itachi.test.service.impl.*.*(..))" id="pointcut" />
+		<aop:pointcut expression="execution(public * per.itachi.test.service.impl.*.*(..))" id="pointcut" />
 		<aop:advisor advice-ref="trxAdvice" pointcut-ref="pointcut" />
 	</aop:config>
 </beans>

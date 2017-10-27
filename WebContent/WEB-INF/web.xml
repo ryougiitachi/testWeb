@@ -142,12 +142,17 @@
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	<!-- 
+		spring+hibernate配合使用时候对于数据延迟加载session提前关闭的解决方案，也可以使用OpenSessionInViewInterceptor拦截器
 		解决了could not initalize proxy - no Session问题 
 		OpenSessionInViewFilter的主要功能是用来把一个Hibernate Session和一次完整的请求过程对应的线程相绑定。
 		目的是为了实现"Open Session in View"的模式。例如： 它允许在事务提交之后延迟加载显示所需要的对象。
 		OpenSessionInViewFilter 过滤器将 Hibernate Session 绑定到请求线程中，它将自动被 Spring 的事务管理器探测到。
 		所以 OpenSessionInViewFilter 适用于 Service 层使用HibernateTransactionManager 或 JtaTransactionManager 进行事务管理的环境，
 		也可以用于非事务只读的数据操作中。
+		存在副作用，在整个request期间session都是open状态，该数据库连接一直被占用，在有限的连接中若某次处理时间过长，讲不能够及时响应。
+		session生命周期可能会比事务长。
+		公网上内容多流量大的网站请慎用。
+		如果使用了struts2需要放到StrutsPrepareAndExecuteFilter之前才可以生效(?)
 	-->
 	<filter>
 		<filter-name>OpenSessionInViewFilter</filter-name>

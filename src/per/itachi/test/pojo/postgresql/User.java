@@ -4,6 +4,10 @@ import java.sql.Timestamp;
 
 public class User {
 	
+	public static final String PROPERTY_USER_ID = "userID";
+	public static final String PROPERTY_USERNAME = "username";
+	public static final String PROPERTY_INSERT_DATE = "insertDate";
+	
 	private long userID;
 	
 	private String username;
