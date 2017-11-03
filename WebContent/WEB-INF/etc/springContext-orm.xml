@@ -79,6 +79,8 @@
 		tx:annotation-driven与tx:advice二选一即可，没有必要都用(?)
 		spring事务管理原理的简单讲解 http://www.cnblogs.com/fjdingsd/p/5632949.html
 		事务四特性 ACID Atomic, consistency, isolation, durability
+		数据库中事务开始的标志，是在第一次执行DML语句，或者上一个事务结束再一次执行DML豫剧的时候。
+		对于select启用事务是因为某些多语句查询牵涉数据较多，为了保证事务一致性通常会打开事务在事务中查询，如果是短时间单一查询可以不用。
 	-->
 	<!-- transaction-manager doesn't make differences? -->
 <!-- 	<tx:annotation-driven transaction-manager="trxMgr" /> -->
@@ -98,6 +100,8 @@
 			<tx:method name="insert*" propagation="REQUIRED"/>
 			<tx:method name="update*" propagation="REQUIRED"/>
 			<tx:method name="delete*" propagation="REQUIRED" />
+			<tx:method name="persist*" propagation="REQUIRED"/>
+			<tx:method name="save*" propagation="REQUIRED"/>
 			<tx:method name="select*" read-only="true"/>
 			<tx:method name="find*" read-only="true"/>
 			<tx:method name="get*" read-only="true"/>
