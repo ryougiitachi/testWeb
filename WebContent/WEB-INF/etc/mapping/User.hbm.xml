@@ -20,5 +20,19 @@
 		<property name="insertDate" column="INSERT_DATE"></property>
 		<property name="updateTime" column="UPDATE_TIME"></property>
 	</class>
+	
+	<query name="HQL_GET_ALL_USERS">
+		<![CDATA[FROM User u ORDER BY u.userID]]>
+	</query>
+	<query name="HQL_GET_USER_BY_ID">
+		<![CDATA[FROM User u WHERE u.userID = :userID]]>
+	</query>
+	
+	<sql-query name="SQL_GET_ALL_USERS">
+		<![CDATA[SELECT USER_ID, USERNAME, USER_TYPE, INSERT_DATE, UPDATE_TIME FROM T_USER ORDER BY USER_ID]]>
+	</sql-query>
+	<sql-query name="SQL_GET_USER_BY_ID">
+		<![CDATA[SELECT USER_ID, USERNAME, USER_TYPE, INSERT_DATE, UPDATE_TIME FROM T_USER WHERE USER_ID = :USER_ID]]>
+	</sql-query>
 
 </hibernate-mapping>

@@ -31,6 +31,12 @@ public class UserDaoImpl implements UserDao {
 	private static final String SQL_GET_ALL_USERS = ""
 			+ "SELECT USER_ID, USERNAME, USER_TYPE, INSERT_DATE, UPDATE_TIME FROM T_USER ORDER BY USER_ID";
 
+	private static final String NAMED_QUERY_GET_ALL_USERS = "HQL_GET_ALL_USERS";
+	private static final String NAMED_QUERY_GET_USER_BY_ID = "HQL_GET_USER_BY_ID";
+	
+	private static final String NAMED_NATIVE_QUERY_GET_ALL_USERS = "SQL_GET_ALL_USERS";
+	private static final String NAMED_NATIVE_QUERY_GET_USER_BY_ID = "SQL_GET_USER_BY_ID";
+
 	@Autowired
 	private SessionFactory sessionFactory;
 	
@@ -72,6 +78,7 @@ public class UserDaoImpl implements UserDao {
 //		result = findUsersByHQL();
 //		result = findUsersByJPACriteria();
 		result = findUsersByNativeQuery();
+		result = findUsersByNamedQuery();
 		return result;
 	}
 	
@@ -135,6 +142,12 @@ public class UserDaoImpl implements UserDao {
 	public List<User> findUsersByNativeQuery() {
 		Session session = getCurrentSession();
 		NativeQuery<User> query = session.createNativeQuery(SQL_GET_ALL_USERS, User.class);
+		return query.getResultList();
+	}
+	
+	public List<User> findUsersByNamedQuery() {
+		Session session = getCurrentSession();
+		Query<User> query = session.createNamedQuery(NAMED_QUERY_GET_ALL_USERS, User.class);
 		return query.getResultList();
 	}
 	
@@ -209,5 +222,4 @@ public class UserDaoImpl implements UserDao {
 	public void flush() {
 		getCurrentSession().flush();
 	}
-	
 }
