@@ -5,8 +5,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import per.itachi.test.pojo.postgresql.User;
@@ -33,6 +36,29 @@ public class UserController {
 		mvc.addObject("userServiceget", userGet);
 		mvc.addObject("userServicefindAll", userFindAll);
 		return mvc;
+	}
+	
+	@RequestMapping(path="/testSaveUser", method={RequestMethod.POST})
+	public ModelAndView testSaveUser(
+			@RequestParam(name="userID") long userID, 
+			@RequestParam(name="username") String username) {
+		User user = new User();
+		user.setUserID(userID);
+		user.setUsername(username);
+		userService.save(user);
+		return testSpringMvcUser();
+	}
+	
+	@RequestMapping(path="/testUpdateUser", method={RequestMethod.POST})
+	public ModelAndView testUpdateUser(@ModelAttribute() User user) {
+		userService.update(user);
+		return testSpringMvcUser();
+	}
+	
+	@RequestMapping(path="/testSaveOrUpdateUser", method={RequestMethod.POST})
+	public ModelAndView testSaveOrUpdateUser(@RequestBody User user) {
+		userService.saveOrUpdate(user);
+		return testSpringMvcUser();
 	}
 	
 }

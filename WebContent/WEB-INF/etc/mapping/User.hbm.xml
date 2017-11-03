@@ -16,7 +16,9 @@
 		<id name="userID" column="USER_ID" type="long"></id>
 <!-- 		<property name="userID" column="USER_ID"></property> -->
 		<property name="username" column="USERNAME"></property>
+		<property name="userType" column="USER_TYPE"></property>
 		<property name="insertDate" column="INSERT_DATE"></property>
+		<property name="updateTime" column="UPDATE_TIME"></property>
 	</class>
 
 </hibernate-mapping>

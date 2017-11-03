@@ -15,6 +15,8 @@ public interface UserService {
 	void persist(User entity);
 
 	long save(User entity);
+	
+	void update(User entity);
 
 	void saveOrUpdate(User entity);
 

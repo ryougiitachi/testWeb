@@ -8,6 +8,8 @@ public interface UserDao extends GenericDao<User, Long> {
 	
 	List<User> findUsersByHQL();
 	
+	List<User> findUsersByJPACriteria();
+	
 	User findUserByQBC(Long id);
 	
 	User findUserByQBE(Long id);

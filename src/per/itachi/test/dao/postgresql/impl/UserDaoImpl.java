@@ -1,5 +1,7 @@
 package per.itachi.test.dao.postgresql.impl;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -13,6 +15,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -24,6 +27,9 @@ import per.itachi.test.pojo.postgresql.User;
 @Repository("defaultUserDao")
 @Transactional(rollbackFor={Exception.class})
 public class UserDaoImpl implements UserDao {
+	
+	private static final String SQL_GET_ALL_USERS = ""
+			+ "SELECT USER_ID, USERNAME, USER_TYPE, INSERT_DATE, UPDATE_TIME FROM T_USER ORDER BY USER_ID";
 
 	@Autowired
 	private SessionFactory sessionFactory;
@@ -62,21 +68,74 @@ public class UserDaoImpl implements UserDao {
 
 	@Override
 	public List<User> findAll() {
-		Query<User> query = getCurrentSession().createQuery("from User u", User.class);//hql?
-		List<User> list = query.list();
-		return list;
+		List<User> result = null;
+//		result = findUsersByHQL();
+//		result = findUsersByJPACriteria();
+		result = findUsersByNativeQuery();
+		return result;
 	}
 	
 	/**
 	 * 它写起来灵活直观，而且与所熟悉的SQL的语法差不太多。条件查询、分页查询、连接查询、嵌套查询，
 	 * 写起来与SQL语法基本一致，唯一不同的就是把表名换成了类或者对象。
 	 * 其它的，包括一些查询函数 （count(),sum()等）、查询条件的设定等，全都跟SQL语法一样。
+	 * 关键字大小写不敏感，但是类名、属性名、定义的alias同义词大小写敏感，混淆的话将导致异常，例如写成这样：
+	 * from User u ORDER BY U.userID 
+	 * org.hibernate.hql.internal.ast.QuerySyntaxException: 
+	 * Invalid path: 'U.userID' [from per.itachi.test.pojo.postgresql.User u ORDER BY U.userID]
 	 * */
 	@Override
 	public List<User> findUsersByHQL() {
-		Query<User> query = getCurrentSession().createQuery("from User u", User.class);//hql?
+		Query<User> query = getCurrentSession().createQuery("from User u ORDER BY u.userID", User.class);//hql?
 		List<User> list = query.list();
 		return list;
+	}
+	
+	/**
+	 * From Hibernate 5.2 on, It is recommended to use JPA Criteria instead of Hibernate Criteria.
+	 * */
+	@Override
+	public List<User> findUsersByJPACriteria() {
+		Session session = getCurrentSession();
+		CriteriaBuilder criteria = session.getCriteriaBuilder();
+		CriteriaQuery<User> query = criteria.createQuery(User.class);
+		//SELECT ... FROM
+		Root<User> root = query.from(User.class);
+		root.alias("u");
+		//Before using the following code, there must be a User constructor with columns listed in select list.
+		//Otherwise, exception will occur as follows: 
+		//org.hibernate.hql.internal.ast.QuerySyntaxException: Unable to locate appropriate constructor on class 
+		//[per.itachi.test.pojo.postgresql.User]. Expected arguments are: long, java.lang.String, int, java.util.Date, 
+		//java.time.LocalDateTime [select new per.itachi.test.pojo.postgresql.User(u.userID, u.username, u.userType, 
+		//u.insertDate, u.updateTime) from per.itachi.test.pojo.postgresql.User as u where ( 1=1 ) and ( u.insertDate<=:param0 )]
+//		query.multiselect(root.get(User.PROPERTY_USER_ID).alias(User.PROPERTY_USER_ID));//also available
+//		query.multiselect(root.get(User.PROPERTY_USER_ID), 
+//				root.get(User.PROPERTY_USERNAME), 
+//				root.get(User.PROPERTY_USER_TYPE), 
+//				root.get(User.PROPERTY_INSERT_DATE), 
+//				root.get(User.PROPERTY_UPDATE_TIME));
+		//WHERE
+		Predicate where = null;
+		where = criteria.conjunction();
+		where = criteria.and(where, criteria.lessThanOrEqualTo(
+				root.<Timestamp>get(User.PROPERTY_INSERT_DATE), Timestamp.valueOf(LocalDateTime.now())));
+		query.where(where);
+		//ORDER BY 
+		query.orderBy(criteria.asc(root.get(User.PROPERTY_USER_ID)));
+		//execute
+		List<User> listResult = session.createQuery(query).getResultList();
+		return listResult;
+	}
+	
+	/**
+	 * NativeQuery can be used for SQL query. 
+	 * Since Hibernate 5.2, Hibernate recommends that use NativeQuery to replace SQLQuery. 
+	 * SQLQuery is deprecated.
+	 * */
+	public List<User> findUsersByNativeQuery() {
+		Session session = getCurrentSession();
+		NativeQuery<User> query = session.createNativeQuery(SQL_GET_ALL_USERS, User.class);
+		return query.getResultList();
 	}
 	
 	/**
@@ -114,17 +173,7 @@ public class UserDaoImpl implements UserDao {
 		return listResult.size() >0 ? (User)listResult.get(0) : null;
 	}
 	
-	/**
-	 * From Hibernate 5.2 on, It is recommanded to use JPA Criteria instead of Hibernate Criteria.
-	 * */
-	public List<User> findUsersByJPACriteria() {
-		Session session = getCurrentSession();
-		CriteriaBuilder criteria = session.getCriteriaBuilder();
-		CriteriaQuery<User> query = criteria.createQuery(User.class);
-		Root<User> root = query.from(User.class);
-//		Predicate condition = criteria.lt
-		return null;
-	}
+	
 
 	@Override
 	public void persist(User entity) {
@@ -134,6 +183,16 @@ public class UserDaoImpl implements UserDao {
 	@Override
 	public Long save(User entity) {
 		return (Long)getCurrentSession().save(entity);
+	}
+	
+	/**
+	 * Hibernate的Session.update方法如果没有数据更新会抛异常
+	 * org.hibernate.StaleStateException: Batch update returned unexpected row count 
+	 * from update [0]; actual row count: 0; expected: 1
+	 * */
+	@Override
+	public void update(User entity) {
+		getCurrentSession().update(entity);
 	}
 
 	@Override
@@ -150,5 +209,5 @@ public class UserDaoImpl implements UserDao {
 	public void flush() {
 		getCurrentSession().flush();
 	}
-
+	
 }

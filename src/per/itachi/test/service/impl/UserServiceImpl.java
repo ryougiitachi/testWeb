@@ -1,5 +1,7 @@
 package per.itachi.test.service.impl;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,11 +41,22 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public long save(User entity) {
+		Timestamp insertDate = Timestamp.valueOf(LocalDateTime.now());
+		entity.setInsertDate(insertDate);
 		return userDao.save(entity).longValue();
+	}
+	
+	@Override
+	public void update(User entity) {
+		Timestamp insertDate = Timestamp.valueOf(LocalDateTime.now());
+		entity.setInsertDate(insertDate);
+		userDao.update(entity);
 	}
 
 	@Override
 	public void saveOrUpdate(User entity) {
+		Timestamp insertDate = Timestamp.valueOf(LocalDateTime.now());
+		entity.setInsertDate(insertDate);
 		userDao.saveOrUpdate(entity);
 	}
 
@@ -56,5 +69,4 @@ public class UserServiceImpl implements UserService {
 	public void flush() {
 		userDao.flush();
 	}
-
 }
