@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
+<beans 
+	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:aop="http://www.springframework.org/schema/aop" 
@@ -19,8 +20,17 @@
 	<!-- 引入外部属性文件 jndi? -->
 	<context:property-placeholder location="/WEB-INF/etc/jdbc.properties" /><!-- classpath:jdbc.properties -->
 
-	<!-- 添加c3p0数据库连接池 bean -->
-	<bean id="myDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+	<!-- 
+		添加c3p0数据库连接池 bean
+		最好在destroy-method加上数据源关闭方法close，因为在tomcat7开始加入了内存泄漏检测，关闭tomcat时如果没有关闭数据源会报错：
+		WARNING: The web application [testWeb] appears to have started a thread named [C3P0PooledConnectionPoolManager
+		[identityToken->|]-] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+		WARNING: The web application [testWeb] appears to have started a thread named [C3P0PooledConnectionPoolManager
+		[identityToken->|]-HelperThread-#0~2] but has failed to stop it. This is very likely to create a memory leak. 
+		Stack trace of thread:
+		 com.mchange.v2.async.ThreadPoolAsynchronousRunner$PoolThread.run(ThreadPoolAsynchronousRunner.java:683)
+	 -->
+	<bean id="myDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
 		<!-- 数据库连接配置 -->
 		<property name="driverClass" value="${jdbc.postgresql.driver}" />
 		<property name="jdbcUrl" value="${jdbc.postgresql.url}" />
@@ -48,6 +58,19 @@
 				<prop key="hibernate.connection.autocommit">false</prop>
 				<!-- 开机自动生成表 -->
 				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<!-- 
+					Hibernate二级缓存配置参考
+				 -->
+				<!-- 指定二级缓存接口类，这是老版的配置参数 -->
+<!-- 				<prop name="cache.provider_class">org.hibernate.cache.EhCacheProvider</prop> -->
+				<!-- 从hibernate4开始二级缓存接口类配置使用以下键值 -->
+				<prop key="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory</prop>
+				<!-- 开启二级缓存 -->
+				<prop key="cache.use_second_level_cache">true</prop>
+				<!-- 打开查询缓存，可以让Query.list从二级缓存中取数据 -->
+				<prop key="cache.use_query_cache">true</prop>
+				<!-- 指定ehcache.xml配置文件位置 -->
+				<prop key="hibernate.cache.provider_configuration_file_resource_path">/WEB-INF/etc/ehcache.xml</prop>
 			</props>
 		</property>
 		<!-- 引用*.hbm.xml映射文件 -->
@@ -91,7 +114,7 @@
 				propagation 有可能是spring为了事务管理自创的机制，与数据库本身的功能无关。
 				isolation 事务隔离级别，默认值为DEFAULT(数据库的默认级别?)，可在org.springframework.transaction.TransactionDefinition中查询
 				timeout 事务超时时间，默认值为-1(不超时)，单位秒
-				read-only 事物是否只读，默认为false，若设置为只读则在处理增删改操作时候会报错失败
+				read-only 事物是否只读，默认为false，若设置为只读则在处理增删改操作时候会报错失败(?)
 				rollback-for 触发回滚的异常，以逗号分隔
 				no-rollback-for 不触发回滚的异常，以逗号分隔
 				默认情况下，任何RuntimeException将触发回滚，任何检查异常不触发回滚。
@@ -102,6 +125,7 @@
 			<tx:method name="delete*" propagation="REQUIRED" />
 			<tx:method name="persist*" propagation="REQUIRED"/>
 			<tx:method name="save*" propagation="REQUIRED"/>
+			<tx:method name="test*" propagation="REQUIRED" read-only="true"/><!-- 配不配都一样？并不 -->
 			<tx:method name="select*" read-only="true"/>
 			<tx:method name="find*" read-only="true"/>
 			<tx:method name="get*" read-only="true"/>

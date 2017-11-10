@@ -13,14 +13,44 @@
 	 -->
 	
 	<class name="User" table="T_USER" lazy="true">
-		<id name="userID" column="USER_ID" type="long"></id>
+		<!-- 
+			如果用注解方式需要在实体类上配置 @Cache(usage = CacheConcurrencyStrategy.READ_ONLY) 
+			usage表示事务方式 read-write|nonstrict-read-write|read-only
+			region应该只是一个名字(?)
+		 -->
+		<cache usage="read-write" region="per.itachi.test.pojo.postgresql.User"></cache>
+		<!-- 
+			单列主键生成方式简介：http://www.cnblogs.com/hoobey/p/5508992.html
+			主要类型：assigned/increment/hilo/seqhilo/sequence/identity/native/uuid/guid/foreign/select
+			assgined是指在save之前手动为主键列赋值的方式
+		 -->
+		<!-- 
+			unsaved-value简说，有点类似三幕运算符的判断，一个老帖子 http://www.iteye.com/topic/1604
+			该属性只有在非显示使用save/update的时候才有用，例如saveOrUpdate或者parent-child类级联实体的操作
+			null 默认值，适用于integer/long/string等大多数主键类型，id==null ? save : update非对象类型可以设定为0
+			none 总是执行update操作，意思是主键不可能为none，所以就不可能执行save……
+			any 总是执行save操作，意思是主键肯定得有可以是any，所以就总是执行save……
+		 -->
+		<id name="userID" column="USER_ID" type="long">
+			<generator class="sequence">
+				<param name="sequence">SEQ_USER_ID</param>
+			</generator>
+		</id>
 <!-- 		<property name="userID" column="USER_ID"></property> -->
 		<property name="username" column="USERNAME"></property>
 		<property name="userType" column="USER_TYPE"></property>
 		<property name="insertDate" column="INSERT_DATE"></property>
 		<property name="updateTime" column="UPDATE_TIME"></property>
+		<property name="lastAccessDatetime" column="LAST_ACCESS_DATETIME"></property>
 	</class>
 	
+	<!-- 
+		query与sql-query的name必须是唯一的，如果这两个有重复在启动的时候就会报异常，如下：
+		org.hibernate.DuplicateMappingException: Duplicate query mapping HQL_GET_ALL_USERS 
+		如果在代码中有未定义的查询名，会在运行时报出异常
+		这种异常query与sql-query是一样的，如下：
+		java.lang.IllegalArgumentException: No query defined for that name [SQL_GET_ALL_USERS]
+	-->
 	<query name="HQL_GET_ALL_USERS">
 		<![CDATA[FROM User u ORDER BY u.userID]]>
 	</query>
@@ -29,7 +59,11 @@
 	</query>
 	
 	<sql-query name="SQL_GET_ALL_USERS">
-		<![CDATA[SELECT USER_ID, USERNAME, USER_TYPE, INSERT_DATE, UPDATE_TIME FROM T_USER ORDER BY USER_ID]]>
+		<![CDATA[SELECT USER_ID, USERNAME, USER_TYPE, INSERT_DATE, UPDATE_TIME, LAST_ACCESS_DATETIME FROM T_USER ORDER BY USER_ID]]>
+		<return class="per.itachi.test.pojo.postgresql.User"></return>
+		<!-- 单表的的情况下不加alias也能通过，加上alias的话u随便加到哪里都可，entityName可以是表名？ -->
+<!-- 		<![CDATA[SELECT USER_ID, USERNAME, U.USER_TYPE, U.INSERT_DATE, U.UPDATE_TIME FROM T_USER U ORDER BY USER_ID]]> -->
+<!-- 		<return class="per.itachi.test.pojo.postgresql.User"></return> -->
 	</sql-query>
 	<sql-query name="SQL_GET_USER_BY_ID">
 		<![CDATA[SELECT USER_ID, USERNAME, USER_TYPE, INSERT_DATE, UPDATE_TIME FROM T_USER WHERE USER_ID = :USER_ID]]>

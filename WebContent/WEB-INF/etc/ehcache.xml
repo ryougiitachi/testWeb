@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache>
+	<!-- 参考 http://www.cnblogs.com/cielosun/p/6793962.html -->
+	<diskStore path="cache"/>
+	<!--没有特殊设置时系统默认使用此设置-->
+	<defaultCache
+			maxElementsInMemory="1000"
+			eternal="false"
+			timeToIdleSeconds="120"
+			timeToLiveSeconds="120"
+			overflowToDisk="true"
+			maxElementsOnDisk="10000"
+			diskPersistent="false"
+			diskExpiryThreadIntervalSeconds="120"
+			memoryStoreEvictionPolicy="LRU"
+	/>
+	<!--想使用查询缓存，这两个类需要添加-->
+	<cache name="org.hibernate.cache.spi.UpdateTimestampsCache"
+			maxElementsInMemory="5000"
+			eternal="true"
+			overflowToDisk="true" />
+	<cache name="org.hibernate.cache.internal.StandardQueryCache"
+			maxElementsInMemory="10000"
+			eternal="false"
+			timeToLiveSeconds="120"
+			overflowToDisk="true" />
+	<cache name="per.itachi.test.pojo.postgresql.User" maxElementsInMemory="2000" eternal="false"
+			timeToIdleSeconds="120" timeToLiveSeconds="120"
+			overflowToDisk="true" />
+<!-- 	<cache name="cn.itcast.bean.Person"  -->
+<!-- 		maxElementsInMemory="100"     内存中最大允许存在的对象数量 -->
+<!-- 		eternal="false" 设置缓存中的对象是否永远不过期 -->
+<!-- 		overflowToDisk="true" 把溢出的对象存放到硬盘上 -->
+<!-- 		timeToIdleSeconds="300" 指定缓存对象空闲多长时间就过期,过期的对象会被清除掉 -->
+<!-- 		timeToLiveSeconds="600" 指定缓存对象总的存活时间 -->
+<!-- 		diskPersistent="false"/>当jvm结束是是否持久化对象 -->
+</ehcache>
