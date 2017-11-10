@@ -9,8 +9,12 @@ public interface UserService {
 	User load(long id);
 
 	User get(long id);
+	
+	User findUser(long id, int type);
 
-	List<User> findAll();
+	List<User> findAll(int type);
+	
+	List<User> findUsers(long id, int type);
 
 	void persist(User entity);
 
@@ -24,4 +28,9 @@ public interface UserService {
 
 	void flush();
 
+	void testTrxPersistence();
+	
+	void testSessionCache();
+	
+	void testSessionFactoryCache();
 }

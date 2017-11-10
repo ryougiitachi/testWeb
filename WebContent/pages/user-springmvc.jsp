@@ -12,6 +12,7 @@
 		<div class="show">
 			<div>
 				<span>userServiceload</span><br/>
+				<!-- exception won't be thrown if item is null -->
 				<c:set value="${requestScope.userServiceload}" var="userServiceload"></c:set>
 				<c:out value="${userServiceload.userID}"></c:out> -
 				<c:out value="${userServiceload.username}"></c:out> - 
@@ -23,6 +24,13 @@
 				<c:out value="${userServiceget.userID}"></c:out> -
 				<c:out value="${userServiceget.username}"></c:out> - 
 				<c:out value="${userServiceget.insertDate}"></c:out> -
+			</div>
+			<div>
+				<span>userServicefind</span><br/>
+				<c:set value="${requestScope.userServicefind}" var="userServicefind"></c:set>
+				<c:out value="${userServicefind.userID}"></c:out> -
+				<c:out value="${userServicefind.username}"></c:out> - 
+				<c:out value="${userServicefind.insertDate}"></c:out> -
 			</div>
 			<div>
 				<span>userServicefindAll</span><br/>
@@ -44,6 +52,37 @@
 					</thead>
 					<tbody>
 						<c:forEach items="${requestScope.userServicefindAll}" var="item">
+							<tr>
+								<td><c:out value="${item.userID}"></c:out></td>
+								<td><c:out value="${item.username}"></c:out></td>
+								<td><c:out value="${item.userType}"></c:out></td>
+								<td><c:out value="${item.insertDate}"></c:out></td>
+								<td><c:out value="${item.updateTime}"></c:out></td>
+							</tr>
+						</c:forEach>
+					</tbody>
+				</table>
+			</div>
+			<div>
+				<span>userServicefindUser</span><br/>
+<!-- 				<ul> -->
+<!-- exception won't be thrown if items is null -->
+<%-- 					<c:forEach items="${requestScope.userServicefindAll}" var="item"> --%>
+<%-- 						<li>${item.userID} - ${item.username} - ${item.insertDate}</li> --%>
+<%-- 					</c:forEach> --%>
+<!-- 				</ul> -->
+				<table>
+					<thead>
+						<tr>
+							<th>User ID</th>
+							<th>Username</th>
+							<th>User Type</th>
+							<th>Insert Datetime</th>
+							<th>Update Datetime</th>
+						</tr>
+					</thead>
+					<tbody>
+						<c:forEach items="${requestScope.userServicefindUser}" var="item">
 							<tr>
 								<td><c:out value="${item.userID}"></c:out></td>
 								<td><c:out value="${item.username}"></c:out></td>
