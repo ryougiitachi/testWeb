@@ -88,3 +88,9 @@ BEGINDATA --数据从这里开始
 5,5,不知秋,1,2008-12-23
 参考：http://www.cnblogs.com/flish/archive/2010/05/31/1748221.html
 参考：http://www.cnblogs.com/binking/archive/2006/11/21/567587.html
+
+--各个驱动之间的区别 http://tiantian0521.blog.163.com/blog/static/4172088320117294265766/
+
+--忘记管理员密码的解决方法
+--参考文章：https://www.cnblogs.com/bluestorm/archive/2013/04/19/3030871.html
+--用orapwd来修改，在$ORACLE_HOME/database下生成新的密码文件pwdsid.ora，除了sys之外都不会改
