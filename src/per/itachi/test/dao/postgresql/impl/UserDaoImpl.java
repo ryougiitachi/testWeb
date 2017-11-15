@@ -38,7 +38,7 @@ public class UserDaoImpl implements UserDao {
 	private static final String NAMED_NATIVE_QUERY_GET_ALL_USERS = "SQL_GET_ALL_USERS";
 	private static final String NAMED_NATIVE_QUERY_GET_USER_BY_ID = "SQL_GET_USER_BY_ID";
 
-	@Autowired
+	@Autowired(required=false)
 	private SessionFactory sessionFactory;
 	
 	/**

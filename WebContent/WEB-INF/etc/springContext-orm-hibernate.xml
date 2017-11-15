@@ -30,7 +30,7 @@
 		Stack trace of thread:
 		 com.mchange.v2.async.ThreadPoolAsynchronousRunner$PoolThread.run(ThreadPoolAsynchronousRunner.java:683)
 	 -->
-	<bean id="myDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+	<bean id="dataSourcePostgresql" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
 		<!-- 数据库连接配置 -->
 		<property name="driverClass" value="${jdbc.postgresql.driver}" />
 		<property name="jdbcUrl" value="${jdbc.postgresql.url}" />
@@ -47,7 +47,7 @@
 	<!-- I think it is better to use default(singleton) instead of scope="prototype" as scope -->
 	<bean id="sessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
 		<!-- 注入连接池，包含了数据库用户名，密码等等信息 -->
-		<property name="dataSource" ref="myDataSource" />
+		<property name="dataSource" ref="dataSourcePostgresql" />
 
 		<!-- 配置Hibernate的其他的属性 -->
 		<property name="hibernateProperties">
@@ -81,7 +81,7 @@
 <!-- 		</property> -->
 		<property name="mappingLocations">
 			<list>
-				<value>/WEB-INF/etc/mapping/User.hbm.xml</value>
+				<value>/WEB-INF/etc/mapping/hibernate/User.hbm.xml</value>
 			</list>
 		</property>
 		<!-- 引用*.hbm.xml映射文件夹 -->
@@ -139,7 +139,7 @@
 		在service层添加事务(?)
 	 -->
 	<aop:config expose-proxy="true">
-		<aop:pointcut expression="execution(public * per.itachi.test.service.impl.*.*(..))" id="pointcut" />
+		<aop:pointcut expression="execution(public * per.itachi.test.service.postgresql.impl.*.*(..))" id="pointcut" />
 		<aop:advisor advice-ref="trxAdvice" pointcut-ref="pointcut" />
 	</aop:config>
 </beans>

@@ -106,7 +106,7 @@
 					Username: <input type="text" name="username" maxlength="20" /> <input
 						type="submit" value="save" />
 				</form>
-		</div>
+			</div>
 			<div class="update">
 				<span>update</span><br/>
 				<form action="${ctx}/springmvc/testUpdateUser" method="post">

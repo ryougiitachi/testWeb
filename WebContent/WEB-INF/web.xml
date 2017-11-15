@@ -78,7 +78,7 @@
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
 			/WEB-INF/etc/springContext.xml,
-			/WEB-INF/etc/springContext-orm.xml
+			/WEB-INF/etc/springContext-orm-mybatis.xml
 		</param-value>
 	</context-param>
 	
@@ -133,6 +133,10 @@
 
 
 	<!-- filter -->
+	<!-- 
+		在filter-mapping中配置不存在的filter-name将导致以下异常而不能启动tomcat
+		 java.lang.IllegalArgumentException: Filter mapping specifies an unknown filter name OpenSessionInViewFilter
+	 -->
 	<filter>
 		<filter-name>TestingFilter</filter-name>
 		<filter-class>per.itachi.test.filter.TestingFilter</filter-class>
@@ -153,6 +157,7 @@
 		session生命周期可能会比事务长。
 		公网上内容多流量大的网站请慎用。
 		如果使用了struts2需要放到StrutsPrepareAndExecuteFilter之前才可以生效(?)
+		如果没有sessionFactory启动的时候不会报错，涉及到数据库操作应该会报错
 	-->
 	<filter>
 		<filter-name>OpenSessionInViewFilter</filter-name>
@@ -196,6 +201,7 @@
 	<servlet-mapping>
 		<servlet-name>springmvc</servlet-name>
 		<url-pattern>/springmvc/*</url-pattern>
+		<url-pattern>/mybatis/*</url-pattern>
 	</servlet-mapping>
 
 	<session-config>

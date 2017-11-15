@@ -1,4 +1,4 @@
-package per.itachi.test.service;
+package per.itachi.test.service.postgresql;
 
 import java.util.List;
 

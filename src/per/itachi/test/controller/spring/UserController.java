@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import per.itachi.test.pojo.postgresql.User;
-import per.itachi.test.service.UserService;
+import per.itachi.test.service.postgresql.UserService;
 
 @Controller
 public class UserController {

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!-- 
+	使用MapperFactoryBean方式一定要将mapper级的namespace写为dao接口，否则会报找不到的错误
+	org.apache.ibatis.binding.BindingException: Invalid bound statement (not found): 
+	per.itachi.test.dao.oracle.UserDao.getUsersBeforeInsertTime
+ -->
+<mapper namespace="per.itachi.test.dao.oracle.UserDao" >
+	<resultMap id="tblUserMapper" type="per.itachi.test.pojo.oracle.User">
+		<!-- jdbcType属性对应这个枚举类org.apache.ibatis.type.JdbcType里面的数值 -->
+		<id column="USER_ID" property="userID" jdbcType="INTEGER" />
+		<result column="USERNAME" property="username" jdbcType="VARCHAR" />
+		<result column="USER_STATUS" property="userStatus" jdbcType="INTEGER" /><!-- jdbcType配置成DATE竟然不报错，结果也没错 -->
+		<result column="INSERT_TIME" property="insertTime" jdbcType="DATE" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="DATE" />
+		<result column="ACCESS_TIME" property="accessTime" jdbcType="DATE" />
+	</resultMap>
+	<sql id="Base_Column_List" >
+		USER_ID, USERNAME, USER_STATUS, INSERT_TIME, UPDATE_TIME, ACCESS_TIME 
+	</sql>
+	
+	<!-- 
+		设置好字段映射resultMap之后返回结果类型就得用这个的id来替代，否则虽然运行时不会报错，
+		但是结果将按照数据库中字段严格一一对应，没有对应上的属性字段将为字段初始化的值；
+		如果字段名与实体类属性名严格一一对应可以使用resultType进行配置。
+	 -->
+	<select id="getUserByID" resultMap="tblUserMapper" parameterType="int" >
+		SELECT 
+			<include refid="Base_Column_List" /> 
+		FROM T_USER 
+		WHERE USER_ID = #{userID,jdbcType=INTEGER}
+	</select>
+	<select id="getUsersBeforeInsertTime" resultMap="tblUserMapper" parameterType="java.time.LocalDateTime" >
+		SELECT 
+			<include refid="Base_Column_List" /> 
+		FROM T_USER 
+		WHERE INSERT_TIME &lt;= #{insertTime,jdbcType=DATE} ORDER BY USER_ID
+	</select>
+	<select id="getUsersAfterInsertTime" resultMap="tblUserMapper" parameterType="java.time.LocalDateTime" >
+		SELECT 
+			<include refid="Base_Column_List" /> 
+		FROM T_USER 
+		WHERE INSERT_TIME &gt;= #{insertTime,jdbcType=DATE} ORDER BY USER_ID
+	</select>
+	
+	<!-- 
+		对于这种insert类型的resultType要慎重，最好还是不用这个属性，之前用int报了以下错误
+		org.xml.sax.SAXParseException; lineNumber: 33; columnNumber: 96; 
+		Attribute "resultType" must be declared for element type "insert".
+	 -->
+	<insert id="insertUser" parameterType="per.itachi.test.pojo.oracle.User" >
+		INSERT INTO T_USER(
+			<include refid="Base_Column_List" />
+		) VALUES (SEQ_USER_ID.NEXTVAL, #{username}, #{userStatus}, #{insertTime}, #{updateTime}, #{accessTime})
+	</insert>
+</mapper>

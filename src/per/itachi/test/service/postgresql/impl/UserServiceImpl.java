@@ -1,4 +1,4 @@
-package per.itachi.test.service.impl;
+package per.itachi.test.service.postgresql.impl;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 import per.itachi.test.dao.postgresql.UserDao;
 import per.itachi.test.pojo.postgresql.User;
-import per.itachi.test.service.UserService;
+import per.itachi.test.service.postgresql.UserService;
 
 @Service("defaultUserService")
 public class UserServiceImpl implements UserService {
