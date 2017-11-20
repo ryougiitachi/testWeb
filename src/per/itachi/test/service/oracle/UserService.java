@@ -15,4 +15,5 @@ public interface UserService {
 	
 	int insertUser(User user);
 
+	void testNestedBean();
 }

@@ -32,6 +32,7 @@
 <!-- 	</bean> -->
 	<bean id="dataSourceOracle" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
 		<constructor-arg name="configuration">
+			<!-- 这种内部嵌套的不能够注入 -->
 			<bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig">
 				<!-- 
 					property不允许子节点，节点中写不了值，要不会报错
@@ -54,6 +55,8 @@
 				<!-- 连接池中允许的最大连接数。缺省值：10；推荐的公式：((core_count * 2) + effective_spindle_count) -->
 				<property name="maximumPoolSize" value="30"></property>
 				<property name="minimumIdle" value="5"></property>
+				<!-- 连接池的名字 -->
+				<property name="poolName" value="MybatisHikariPool"></property>
 			</bean>
 		</constructor-arg>
 	</bean>

@@ -39,4 +39,10 @@ public class UserController {
 		userService.insertUser(user);
 		return showBasicInfo();
 	}
+	
+	@RequestMapping(path="/testNestedBean", method={RequestMethod.GET})
+	public ModelAndView testNestedBean() {
+		userService.testNestedBean();
+		return new ModelAndView("/default");
+	}
 }
