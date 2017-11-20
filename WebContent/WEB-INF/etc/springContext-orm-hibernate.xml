@@ -20,7 +20,10 @@
 	<!-- 引入外部属性文件 jndi? -->
 	<context:property-placeholder location="/WEB-INF/etc/jdbc.properties" /><!-- classpath:jdbc.properties -->
 
+	<!-- 数据库连接配置 -->
 	<!-- 
+		因为在高并发的时候效率比较低下，所以现已不建议使用c3p0作为默认数据库连接池
+		参考文章：https://www.tuicool.com/articles/qayayiM
 		添加c3p0数据库连接池 bean
 		最好在destroy-method加上数据源关闭方法close，因为在tomcat7开始加入了内存泄漏检测，关闭tomcat时如果没有关闭数据源会报错：
 		WARNING: The web application [testWeb] appears to have started a thread named [C3P0PooledConnectionPoolManager
@@ -28,20 +31,34 @@
 		WARNING: The web application [testWeb] appears to have started a thread named [C3P0PooledConnectionPoolManager
 		[identityToken->|]-HelperThread-#0~2] but has failed to stop it. This is very likely to create a memory leak. 
 		Stack trace of thread:
-		 com.mchange.v2.async.ThreadPoolAsynchronousRunner$PoolThread.run(ThreadPoolAsynchronousRunner.java:683)
+		 com.mchange.v2.async.ThreadPoolAsynchronousRunner$PoolThread.run(ThreadPoolAsynchronousRunner.java:683) 
 	 -->
-	<bean id="dataSourcePostgresql" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
-		<!-- 数据库连接配置 -->
-		<property name="driverClass" value="${jdbc.postgresql.driver}" />
-		<property name="jdbcUrl" value="${jdbc.postgresql.url}" />
-		<property name="user" value="${jdbc.postgresql.username}" />
-		<property name="password" value="${jdbc.postgresql.password}" />
+<!-- 	<bean id="dataSourcePostgresql" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close"> -->
+<!-- 		<property name="driverClass" value="${jdbc.postgresql.driver}" /> -->
+<!-- 		<property name="jdbcUrl" value="${jdbc.postgresql.url}" /> -->
+<!-- 		<property name="user" value="${jdbc.postgresql.username}" /> -->
+<!-- 		<property name="password" value="${jdbc.postgresql.password}" /> -->
 		<!-- 每300秒检查所有连接池中的空闲连接 -->
-		<property name="idleConnectionTestPeriod" value="300"></property>
+<!-- 		<property name="idleConnectionTestPeriod" value="300"></property> -->
 		<!-- 最大空闲时间,900秒内未使用则连接被丢弃。若为0则永不丢弃 -->
-		<property name="maxIdleTime" value="900"></property>
+<!-- 		<property name="maxIdleTime" value="900"></property> -->
 		<!-- 最大连接数 -->
-		<property name="maxPoolSize" value="2"></property>
+<!-- 		<property name="maxPoolSize" value="2"></property> -->
+<!-- 	</bean> -->
+	<!-- 
+		tomcat-jdbc是从7.0开始新加的用来取代dbcp的连接池，tomcat默认使用该连接池作为数据源，以下文章讲解了各个参数的意思。
+		参考文章：https://www.cnblogs.com/asoks/p/5321534.html
+		bean名字不能重复，否则启动报错 
+	 -->
+	<bean id="dataSourcePostgresql" class="org.apache.tomcat.jdbc.pool.DataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.postgresql.driver}" />
+		<property name="url" value="${jdbc.postgresql.url}" />
+		<property name="username" value="${jdbc.postgresql.username}" />
+		<property name="password" value="${jdbc.postgresql.password}" />
+		<property name="initialSize" value="5" />
+		<property name="minIdle" value="5" />
+		<property name="maxActive" value="10" /><!-- property名字不能重复，否则启动报错 -->
+		<property name="maxIdle" value="10" />
 	</bean>
 	<!-- 添加sessionFactory bean，注意，该类是Spring提供的 -->
 	<!-- I think it is better to use default(singleton) instead of scope="prototype" as scope -->
