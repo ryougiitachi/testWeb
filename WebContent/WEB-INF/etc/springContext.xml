@@ -23,5 +23,11 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
 	</context:component-scan>
 	<context:component-scan base-package="per.itachi.test.service"></context:component-scan>
+	
+	<!-- spring不能加载直接出现多次context:property-placeholder，想要这么用就得加ignore-unresolvable=true;
+		context:property-placeholder元素等价于加载org.springframework.beans.factory.config.PropertyPlaceholderConfigurer
+	 -->
+	<context:property-placeholder location="/WEB-INF/etc/jdbc.properties" ignore-unresolvable="true"/><!-- classpath:jdbc.properties -->
+	<context:property-placeholder location="/WEB-INF/etc/jms-rabbitmq.properties" ignore-unresolvable="true"/>
 
 </beans>

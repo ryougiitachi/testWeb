@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd  
+			http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd 
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:component-scan base-package="per.itachi.test.jms.rabbitmq.producer"></context:component-scan>
+
+	<!-- connFactoryRabbitmq01 -->
+	<!--配置connection-factory，指定连接rabbit server参数 -->
+	<rabbit:connection-factory id="connFactoryRabbitmq01" virtual-host="${jms.rabbitmq.vhost}" 
+			username="${jms.rabbitmq.username}" password="${jms.rabbitmq.password}" host="${jms.rabbitmq.host}" 
+			port="${jms.rabbitmq.port}"></rabbit:connection-factory>
+
+	<!--通过指定下面的admin信息，当前producer中的exchange和queue会在rabbitmq服务器上自动生成 -->
+	<rabbit:admin id="connAdminRabbit01" connection-factory="connFactoryRabbitmq01" />
+
+	<!--定义queue队列 -->
+	<rabbit:queue name="queueRabbit01" durable="true" auto-delete="false" exclusive="false" declared-by="connAdminRabbit01" />
+	<rabbit:queue name="queueRabbit02" durable="true" auto-delete="false" exclusive="false" declared-by="connAdminRabbit01" />
+
+	<!-- 定义direct exchange，绑定指定的队列列表，binding列表里面的东西可以分开声明 -->
+	<rabbit:direct-exchange name="xchgRabbit01" durable="true" auto-delete="false" declared-by="connAdminRabbit01">
+		<rabbit:bindings>
+			<rabbit:binding queue="queueRabbit01" key="itachi.jms.user.order"></rabbit:binding>
+			<rabbit:binding queue="queueRabbit01" key="itachi.jms.order"></rabbit:binding>
+			<rabbit:binding queue="queueRabbit02" key="itachi.jms.black.list"></rabbit:binding>
+		</rabbit:bindings>
+	</rabbit:direct-exchange>
+
+	<!--定义rabbit template可以接收和发送数据，用法是在java类中进行注入 -->
+	<rabbit:template id="rabbitTemplate01" connection-factory="connFactoryRabbitmq01" exchange="xchgRabbit01" />
+
+	<!-- 消息接收者(消费者) -->
+	<bean id="rabbitReceiver01" class="per.itachi.test.jms.rabbitmq.consumer.UserOrderConsumer"></bean>
+	<bean id="rabbitReceiver02" class="per.itachi.test.jms.rabbitmq.consumer.BlackListcConsumer"></bean>
+
+	<!-- queue litener 观察 监听模式 当有消息到达时会通知监听在对应的队列上的监听对象，里面的监听可以分开声明 -->
+	<rabbit:listener-container connection-factory="connFactoryRabbitmq01">
+		<rabbit:listener queues="queueRabbit01" ref="rabbitReceiver01" />
+		<rabbit:listener queues="queueRabbit02" ref="rabbitReceiver02" />
+	</rabbit:listener-container>
+
+	
+	<!-- connFactoryRabbitmq02 -->
+	<!-- 配置connection-factory，指定连接rabbit server参数 -->
+	<rabbit:connection-factory id="connFactoryRabbitmq02" virtual-host="${jms.rabbitmq.vhost}" 
+			username="${jms.rabbitmq.username}" password="${jms.rabbitmq.password}" host="${jms.rabbitmq.host}" 
+			port="${jms.rabbitmq.port}" />
+
+	<!--通过指定下面的admin信息，当前producer中的exchange和queue会在rabbitmq服务器上自动生成 -->
+	<rabbit:admin id="connAdminRabbit02" connection-factory="connFactoryRabbitmq02" />
+
+	<!--定义queue -->
+	<rabbit:queue name="queueRabbit03" durable="true"
+		auto-delete="false" exclusive="false" declared-by="connAdminRabbit02" />
+
+	<!-- 定义direct exchange，绑定queueTest -->
+	<rabbit:topic-exchange name="xchgRabbit02" durable="true" auto-delete="false" declared-by="connAdminRabbit02">
+		<rabbit:bindings>
+			<rabbit:binding queue="queueRabbit03" pattern="itachi.jms.paylog"></rabbit:binding>
+			<rabbit:binding queue="queueRabbit03" pattern="itachi.jms.pay.log"></rabbit:binding>
+		</rabbit:bindings>
+	</rabbit:topic-exchange>
+
+	<!--定义rabbit template用于数据的接收和发送 -->
+	<rabbit:template id="rabbitTemplate02" connection-factory="connFactoryRabbitmq02" exchange="xchgRabbit02" />
+
+	<!-- 消息接收者 -->
+	<bean id="rabbitReceiver03" class="per.itachi.test.jms.rabbitmq.consumer.PayLogConsumer"></bean>
+
+	<!-- queue litener 观察 监听模式 当有消息到达时会通知监听在对应的队列上的监听对象 -->
+	<rabbit:listener-container connection-factory="connFactoryRabbitmq02">
+		<rabbit:listener queues="queueRabbit03" ref="rabbitReceiver03" />
+	</rabbit:listener-container>
+</beans>

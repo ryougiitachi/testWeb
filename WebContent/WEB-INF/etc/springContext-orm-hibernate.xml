@@ -18,7 +18,7 @@
 	<context:component-scan base-package="per.itachi.test.pojo.postgresql"></context:component-scan>
 
 	<!-- 引入外部属性文件 jndi? -->
-	<context:property-placeholder location="/WEB-INF/etc/jdbc.properties" /><!-- classpath:jdbc.properties -->
+<!-- 	<context:property-placeholder location="/WEB-INF/etc/jdbc.properties" /> -->
 
 	<!-- 数据库连接配置 -->
 	<!-- 

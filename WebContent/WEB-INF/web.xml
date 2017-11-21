@@ -78,7 +78,8 @@
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
 			/WEB-INF/etc/springContext.xml,
-			/WEB-INF/etc/springContext-orm-hibernate.xml
+			/WEB-INF/etc/springContext-orm-mybatis.xml,
+			/WEB-INF/etc/springContext-jms-rabbitmq.xml,
 		</param-value>
 	</context-param>
 	
@@ -159,14 +160,14 @@
 		如果使用了struts2需要放到StrutsPrepareAndExecuteFilter之前才可以生效(?)
 		如果没有sessionFactory启动的时候不会报错，涉及到数据库操作应该会报错
 	-->
-	<filter>
-		<filter-name>OpenSessionInViewFilter</filter-name>
-		<filter-class>org.springframework.orm.hibernate5.support.OpenSessionInViewFilter</filter-class>
-	</filter>
-	<filter-mapping>
-		<filter-name>OpenSessionInViewFilter</filter-name>
-		<url-pattern>/springmvc/*</url-pattern>
-	</filter-mapping>
+<!-- 	<filter> -->
+<!-- 		<filter-name>OpenSessionInViewFilter</filter-name> -->
+<!-- 		<filter-class>org.springframework.orm.hibernate5.support.OpenSessionInViewFilter</filter-class> -->
+<!-- 	</filter> -->
+<!-- 	<filter-mapping> -->
+<!-- 		<filter-name>OpenSessionInViewFilter</filter-name> -->
+<!-- 		<url-pattern>/springmvc/*</url-pattern> -->
+<!-- 	</filter-mapping> -->
 	
 	
 	<!-- It is said that servlet just matches once? precise matching pattern?-->
