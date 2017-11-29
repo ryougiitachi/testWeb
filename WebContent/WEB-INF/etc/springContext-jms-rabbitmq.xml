@@ -12,11 +12,13 @@
 
 	<!-- connFactoryRabbitmq01 -->
 	<!--配置connection-factory，指定连接rabbit server参数 -->
+	<!-- rabbit:connection-factory等同于(?)org.springframework.amqp.rabbit.connection.CachingConnectionFactory -->
 	<rabbit:connection-factory id="connFactoryRabbitmq01" virtual-host="${jms.rabbitmq.vhost}" 
 			username="${jms.rabbitmq.username}" password="${jms.rabbitmq.password}" host="${jms.rabbitmq.host}" 
 			port="${jms.rabbitmq.port}"></rabbit:connection-factory>
 
 	<!--通过指定下面的admin信息，当前producer中的exchange和queue会在rabbitmq服务器上自动生成 -->
+	<!-- org.springframework.amqp.rabbit.core.RabbitAdmin -->
 	<rabbit:admin id="connAdminRabbit01" connection-factory="connFactoryRabbitmq01" />
 
 	<!--定义queue队列 -->
@@ -33,6 +35,7 @@
 	</rabbit:direct-exchange>
 
 	<!--定义rabbit template可以接收和发送数据，用法是在java类中进行注入 -->
+	<!-- rabbit:template等同于(?)org.springframework.amqp.rabbit.core.RabbitTemplate -->
 	<rabbit:template id="rabbitTemplate01" connection-factory="connFactoryRabbitmq01" exchange="xchgRabbit01" />
 
 	<!-- 消息接收者(消费者) -->
@@ -40,7 +43,9 @@
 	<bean id="rabbitReceiver02" class="per.itachi.test.jms.rabbitmq.consumer.BlackListcConsumer"></bean>
 
 	<!-- queue litener 观察 监听模式 当有消息到达时会通知监听在对应的队列上的监听对象，里面的监听可以分开声明 -->
+	<!-- rabbit:listener-container等同于(?)org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer -->
 	<rabbit:listener-container connection-factory="connFactoryRabbitmq01">
+		<!-- rabbit:listener等同于(?)org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter -->
 		<rabbit:listener queues="queueRabbit01" ref="rabbitReceiver01" />
 		<rabbit:listener queues="queueRabbit02" ref="rabbitReceiver02" />
 	</rabbit:listener-container>
