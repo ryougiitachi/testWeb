@@ -1,0 +1,22 @@
+spring中使用aop
+一些基本的spring依赖
+D:\workspaces\Practice-Java\testWeb\WebContent\WEB-INF\lib\aspectjweaver-1.8.9.jar
+D:\workspaces\Practice-Java\testWeb\WebContent\WEB-INF\lib\spring-aop-4.3.9.RELEASE.jar
+cglib-x.jar(optional)
+
+spring下集成rabbitmq
+先装一个本地的rabbitmq
+amqp-client-x.x.x.jar
+spring-amqp-x.x.x.RELEASE.jar
+spring-rabbit-x.x.x.RELEASE.jar
+spring-retry-x.x.x.RELEASE.jar
+
+spring下集成redis
+先装一个本地redis，redis官方不支持windows，所以要在这个地址下一个win64版本https://github.com/MSOpenTech/redis/releases
+commons-pool2-2.x.x.jar
+jedis-2.9.0.jar(require commons-pool2)
+spring-data-redis-2.x.x.RELEASE.jar
+
+spring-data系列release下载
+https://repo.spring.io/libs-release/org/springframework/data/
+https://mvnrepository.com/artifact/redis.clients/jedis
