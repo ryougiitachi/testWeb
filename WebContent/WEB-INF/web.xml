@@ -78,7 +78,9 @@
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
 			/WEB-INF/etc/springContext.xml,
-			/WEB-INF/etc/springContext-orm-mybatis.xml,
+			/WEB-INF/etc/springContext-orm-hibernate.xml,
+<!-- 			/WEB-INF/etc/springContext-orm-mybatis.xml, -->
+<!-- 			/WEB-INF/etc/springContext-orm-*.xml, -->
 			/WEB-INF/etc/springContext-jms-rabbitmq.xml,
 		</param-value>
 	</context-param>
