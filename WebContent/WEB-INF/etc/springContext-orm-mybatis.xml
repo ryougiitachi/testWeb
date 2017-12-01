@@ -101,6 +101,10 @@
 		<property name="mapperInterface" value="per.itachi.test.dao.oracle.UserDao" />
 		<property name="sqlSessionFactory" ref="mybatisSessionFactory" />
 	</bean>
+	<bean id="oracleBankCityDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="per.itachi.test.dao.oracle.BankCityDao" />
+		<property name="sqlSessionFactory" ref="mybatisSessionFactory" />
+	</bean>
 	
 	
 	<!-- 

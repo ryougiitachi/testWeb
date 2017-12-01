@@ -19,6 +19,7 @@ import per.itachi.test.service.oracle.UserService;
  * 默认情况下@org.springframework.stereotype.Controller的bean名称为首字母小写的类名(不包含包名)
  * */
 @Controller("mybatisUserController")
+@RequestMapping("/mybatis/user")
 public class UserController {
 	
 	@Autowired

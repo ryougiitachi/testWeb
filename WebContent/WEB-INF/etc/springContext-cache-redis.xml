@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:context="http://www.springframework.org/schema/context"
+		xmlns:p="http://www.springframework.org/schema/p"
+		xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<!-- spring-data-redis官方文档说明https://docs.spring.io/spring-data/data-redis/docs/current/reference/html/ -->
+<!-- 	<context:component-scan base-package=""></context:component-scan> -->
+
+	<context:property-placeholder location="/WEB-INF/etc/cache-redis.properties" ignore-unresolvable="true"/>
+	
+	<!-- jedis连接池配置 -->
+	<bean id="redisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<!-- 最小空闲连接数 -->
+		 <property name="minIdle" value="${cache.redis.minIdle}"/>
+		 <!-- 最大空闲连接数 -->
+		<property name="maxIdle" value="${cache.redis.maxIdle}"/>
+		<!-- 最大连接数 -->
+		<property name="maxTotal" value="${cache.redis.maxTotal}"/>
+		<!-- 获取连接时的最大等待毫秒数,小于零:阻塞不确定的时间,默认-1 -->
+		<property name="maxWaitMillis" value="${cache.redis.maxWaitMillis}"/>
+		<!-- 在获取连接的时候检查有效性, 默认false -->
+		<property name="testOnBorrow" value="${cache.redis.testOnBorrow}"/>
+		<!-- 每次释放连接的最大数目 -->
+		<property name="numTestsPerEvictionRun" value="${cache.redis.numTestsPerEvictionRun}"/>
+		<!-- 释放连接的扫描间隔（毫秒） -->
+		<property name="timeBetweenEvictionRunsMillis" value="${cache.redis.timeBetweenEvictionRunsMillis}"/>
+		<!-- 连接最小空闲时间 -->
+		<property name="minEvictableIdleTimeMillis" value="${cache.redis.minEvictableIdleTimeMillis}"/>
+		<!-- 连接空闲多久后释放, 当空闲时间>该值 且 空闲连接>最大空闲连接数 时直接释放 -->
+		<property name="softMinEvictableIdleTimeMillis" value="${cache.redis.softMinEvictableIdleTimeMillis}"/>
+		<!-- 在空闲时检查有效性, 默认false -->
+		<property name="testWhileIdle" value="${cache.redis.testWhileIdle}"/>
+		<!-- 连接耗尽时是否阻塞, false报异常,ture阻塞直到超时, 默认true -->
+		<property name="blockWhenExhausted" value="${cache.redis.blockWhenExhausted}"/>
+	</bean>
+	<bean id="jedisShardInfo01" class="redis.clients.jedis.JedisShardInfo">
+		<constructor-arg name="host" value="${cache.redis.host}" />
+		<constructor-arg name="name" value="redisservice01" />
+		<constructor-arg name="port" value="${cache.redis.port}" />
+		<constructor-arg name="timeout" value="${cache.redis.timeout}" />
+		<constructor-arg name="weight" value="${cache.redis.weight}" />
+	</bean>
+	<!-- redis连接池 -->
+	<!-- jedis提供了JedisPool与ShardedJedisPool作为连接池，前者适用于单机，后者适用于分片(redis集群?) -->
+	<!-- spring-data-redis也提供了JedisConnectionFactory作为连接池，使用时需用RedisCallback<T>作为回调 -->
+<!-- 	<bean id="redisPool" class="redis.clients.jedis.JedisPool" destroy-method="close"> -->
+<!-- 		<constructor-arg name="poolConfig" ref="redisPoolConfig"/> -->
+<!-- 		<constructor-arg name="host" value="${cache.redis.host}"/> -->
+<!-- 		<constructor-arg name="port" value="${cache.redis.port}"/> -->
+<!-- 	</bean> -->
+<!-- 	<bean id="redisPool" class="redis.clients.jedis.ShardedJedisPool" destroy-method="close"> -->
+<!-- 		<constructor-arg name="poolConfig" ref="poolConfig"></constructor-arg> -->
+<!-- 		<constructor-arg name="shards"> -->
+<!-- 			<list> -->
+<!-- 				<ref bean="jedisShardInfo01"/> -->
+<!-- 			</list> -->
+<!-- 		</constructor-arg> -->
+<!-- 	</bean> -->
+	<bean id="redisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory" 
+			p:host-name="${cache.redis.host}" p:port="${cache.redis.port}" p:pool-config-ref="redisPoolConfig"/>
+			
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+		<property name="connectionFactory" ref="redisConnectionFactory"></property>
+	</bean>
+	
+	<bean id="redisCacheMgr" class="org.springframework.data.redis.cache.RedisCacheManager">
+	</bean>
+</beans>

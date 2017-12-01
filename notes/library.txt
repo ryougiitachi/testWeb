@@ -15,8 +15,11 @@ spring下集成redis
 先装一个本地redis，redis官方不支持windows，所以要在这个地址下一个win64版本https://github.com/MSOpenTech/redis/releases
 commons-pool2-2.x.x.jar
 jedis-2.9.0.jar(require commons-pool2)
+spring-context-support-4.3.9.RELEASE.jar(RedisCacheManager继承的AbstractTransactionSupportingCacheManager在这个里面)
+spring-data-commons-2.x.x.RELEASE.jar
 spring-data-redis-2.x.x.RELEASE.jar
 
 spring-data系列release下载
 https://repo.spring.io/libs-release/org/springframework/data/
 https://mvnrepository.com/artifact/redis.clients/jedis
+

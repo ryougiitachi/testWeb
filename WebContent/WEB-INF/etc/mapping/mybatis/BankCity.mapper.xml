@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="per.itachi.test.dao.oracle.BankCityDao" >
+	<resultMap id="tblBankCityMapper" type="per.itachi.test.pojo.oracle.BankCity">
+		<!-- jdbcType属性对应这个枚举类org.apache.ibatis.type.JdbcType里面的数值 -->
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="CODE" property="code" jdbcType="VARCHAR" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" /><!-- jdbcType配置成DATE竟然不报错，结果也没错 -->
+		<result column="STATUS" property="status" jdbcType="VARCHAR" />
+		<result column="CREATOR" property="creator" jdbcType="VARCHAR" />
+		<result column="INSERT_TIME" property="insertTime" jdbcType="DATE" />
+		<result column="EDITOR" property="editor" jdbcType="VARCHAR" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="DATE" />
+	</resultMap>
+	<sql id="Base_Column_List" > ID, CODE, NAME, STATUS, CREATOR, INSERT_TIME, EDITOR, UPDATE_TIME </sql>
+	
+	<!-- 
+		设置好字段映射resultMap之后返回结果类型就得用这个的id来替代，否则虽然运行时不会报错，
+		但是结果将按照数据库中字段严格一一对应，没有对应上的属性字段将为字段初始化的值；
+		如果字段名与实体类属性名严格一一对应可以使用resultType进行配置。
+	 -->
+	<select id="getBankCityByID" resultMap="tblBankCityMapper" parameterType="int" >
+		SELECT 
+			<include refid="Base_Column_List" /> 
+		FROM T_BANK_CITY 
+		WHERE ID = #{userID,jdbcType=INTEGER}
+	</select>
+	<select id="getAllItems" resultMap="tblBankCityMapper">
+		SELECT 
+			<include refid="Base_Column_List" /> 
+		FROM T_BANK_CITY ORDER BY ID
+	</select>
+	
+	<insert id="insertBankCity" parameterMap="tblBankCityMapper">
+		<selectKey resultType="int" keyProperty="id" order="BEFORE">
+			SELECT SEQ_BANK_CITY_ID.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO T_BANK_CITY(
+			<include refid="Base_Column_List" />
+		) VALUES (#{id}, #{code}, #{name}, #{status}, #{creator}, #{insertTime}, #{editor}, #{updateTime})
+	</insert>
+	<update id="updBankCityByID" parameterMap="tblBankCityMapper">
+		UPDATE T_BANK_CITY SET 
+		<set>
+			<if test="name!=null and name!=''">NAME=#{name}, </if>
+			<if test="status!=null and status!=''">status=#{status}, </if>
+			<!-- 正常情况下，新建人员与时间是不能改的 -->
+<!-- 			<if test="creator!=null and creator!=''">creator=#{creator}, </if> -->
+<!-- 			<if test="insertTime!=null and insertTime!=''">INSERT_TIME=#{insertTime}, </if> -->
+			<if test="editor!=null && editor!=''">editor=#{editor}, </if>
+			UPDATE_TIME=SYSDATE, 
+		</set>
+		WHERE ID = #{id,jdbcType=INTEGER}
+	</update>
+	<delete id="delBankCityByID" parameterType="int">
+		DELETE FROM T_BANK_CITY WHERE ID = #{id,jdbcType=INTEGER}
+	</delete>
+</mapper>
