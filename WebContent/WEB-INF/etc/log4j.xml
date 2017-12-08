@@ -68,6 +68,9 @@
 	<category name="com.mchange.v2">
 		<priority value="info"/>
 	</category>
+	<category name="com.zaxxer.hikari">
+		<priority value="info"/>
+	</category>
 	
 	<root>
 		<priority value="debug" />

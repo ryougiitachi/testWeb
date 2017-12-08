@@ -11,9 +11,6 @@
 		<div class="modify">
 			<div class="insert">
 				<span>save</span><br/>
-				<!-- 
-					enctype = {application/x-www-form-urlencoded(default), multipart/form-data, text/plain}
-				 -->
 				<form action="${ctx}/mybatis/bankCity/add" method="post">
 					code: <input type="text" name="code" maxlength="20" />
 					name: <input type="text" name="name" maxlength="50" />
@@ -33,6 +30,7 @@
 			<div class="update">
 				<span>update</span><br/>
 				<form action="${ctx}/mybatis/bankCity/update" method="post">
+<!-- 					id: <input type="text" name="id" maxlength="50" /> -->
 					staff: <input type="text" name="editor" maxlength="50" />
 					<input type="submit" value="save" />
 				</form>
@@ -40,15 +38,68 @@
 			<div class="delete">
 				<span>"delete"</span><br/>
 				<form action="${ctx}/mybatis/bankCity/delete" method="post">
-					id: <input type="text" name="code" maxlength="10" />
+					id: <input type="text" name="id" maxlength="10" />
 					<input type="submit" value="save" />
+				</form>
+			</div>
+			<div class="get-one">
+				<span>"get-one"</span><br/>
+				<form action="${ctx}/mybatis/bankCity/getBankCityByID" method="post">
+					id: <input type="text" name="bankCityID" maxlength="10" />
+					<input type="submit" value="save" />
+				</form>
+			</div>
+			<div class="all-items">
+				<span>"get all items"</span><br/>
+				<form action="${ctx}/mybatis/bankCity/getAllItems" method="post">
+					<input type="submit" value="get" />
+				</form>
+				<span>"map all items"</span><br/>
+				<form action="${ctx}/mybatis/bankCity/mapAllItems" method="post">
+					<input type="submit" value="get" />
 				</form>
 			</div>
 		</div>
 		<div class="show">
-			<div>
+			<div class="bank-city-one">
+				<span>Bank City One</span><br/>
+				<c:if test="${requestScope.bankCity != null}"></c:if>
+				<table>
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Code</th>
+							<th>Name</th>
+							<th>Status</th>
+							<th>CREATOR</th>
+							<th>Insert Time</th>
+							<th>EDITOR</th>
+							<th>Update Time</th>
+						</tr>
+					</thead>
+					<c:set value="${requestScope.bankCity}" var="bankCity"></c:set>
+					<tbody>
+						<tr>
+							<!-- 
+								If there is a property not found, the following exception will occur: 
+								javax.el.PropertyNotFoundException: Property 'insertDate' not found on type 
+								per.itachi.test.pojo.oracle.User
+							 -->
+							<td><c:out value="${bankCity.id}"></c:out></td>
+							<td><c:out value="${bankCity.code}"></c:out></td>
+							<td><c:out value="${bankCity.name}"></c:out></td>
+							<td><c:out value="${bankCity.status}"></c:out></td>
+							<td><c:out value="${bankCity.creator}"></c:out></td>
+							<td><c:out value="${bankCity.insertTime}"></c:out></td>
+							<td><c:out value="${bankCity.editor}"></c:out></td>
+							<td><c:out value="${bankCity.updateTime}"></c:out></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div class="bank-city-inserted">
 				<span>Bank City Inserted</span><br/>
-				<c:if test="${requestScope.bankCityInserted == null}"></c:if>
+				<c:if test="${requestScope.bankCityInserted != null}"></c:if>
 				<table>
 					<thead>
 						<tr>

@@ -70,6 +70,7 @@
 		<property name="mapperLocations">
 			<list>
 				<value>/WEB-INF/etc/mapping/mybatis/User.mapper.xml</value>
+				<value>/WEB-INF/etc/mapping/mybatis/BankCity.mapper.xml</value>
 			</list>
 		</property>
 	</bean>

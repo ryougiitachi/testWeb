@@ -6,16 +6,19 @@
 		xsi:schemaLocation="
 			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
-	<!-- spring-data-redis官方文档说明https://docs.spring.io/spring-data/data-redis/docs/current/reference/html/ -->
-<!-- 	<context:component-scan base-package=""></context:component-scan> -->
-
-	<context:property-placeholder location="/WEB-INF/etc/cache-redis.properties" ignore-unresolvable="true"/>
 	
+	<!-- spring-data-redis官方文档说明https://docs.spring.io/spring-data/data-redis/docs/current/reference/html/ -->
+	<context:component-scan base-package="per.itachi.test.dao.oracle"></context:component-scan>
+
+	<context:property-placeholder
+		location="/WEB-INF/etc/cache-redis.properties" 
+		ignore-unresolvable="true" system-properties-mode="NEVER" />
+
 	<!-- jedis连接池配置 -->
 	<bean id="redisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
 		<!-- 最小空闲连接数 -->
-		 <property name="minIdle" value="${cache.redis.minIdle}"/>
-		 <!-- 最大空闲连接数 -->
+		<property name="minIdle" value="${cache.redis.minIdle}"/>
+		<!-- 最大空闲连接数 -->
 		<property name="maxIdle" value="${cache.redis.maxIdle}"/>
 		<!-- 最大连接数 -->
 		<property name="maxTotal" value="${cache.redis.maxTotal}"/>
@@ -62,10 +65,20 @@
 	<bean id="redisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory" 
 			p:host-name="${cache.redis.host}" p:port="${cache.redis.port}" p:pool-config-ref="redisPoolConfig"/>
 			
-	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
-		<property name="connectionFactory" ref="redisConnectionFactory"></property>
-	</bean>
+<!-- 	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate"> -->
+<!-- 		<property name="connectionFactory" ref="redisConnectionFactory"></property> -->
+<!-- 	</bean> -->
 	
-	<bean id="redisCacheMgr" class="org.springframework.data.redis.cache.RedisCacheManager">
-	</bean>
+<!-- 	<bean id="redisCacheWriter" class="org.springframework.data.redis.cache.DefaultRedisCacheWriter"> -->
+<!-- 		<constructor-arg name="connectionFactory" ref="redisConnectionFactory"></constructor-arg> -->
+<!-- 	</bean> -->
+	
+<!-- 	<bean id="redisCacheConfiguration" class="org.springframework.data.redis.cache.RedisCacheConfiguration"> -->
+<!-- 		<constructor-arg name="connectionFactory" ref="redisConnectionFactory"></constructor-arg> -->
+<!-- 	</bean> -->
+	
+<!-- 	<bean id="redisCacheMgr" class="org.springframework.data.redis.cache.RedisCacheManager"> -->
+<!-- 		<constructor-arg name="connectionFactory" ref="redisConnectionFactory"></constructor-arg> -->
+<!-- 	</bean> -->
+	<!-- 返回值为List<CustomClass>被缓存到redis时将被作为一个string存储，里面的内容都是序列化的十六进制化的字符串 -->
 </beans>

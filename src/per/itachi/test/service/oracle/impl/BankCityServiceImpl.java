@@ -2,6 +2,7 @@ package per.itachi.test.service.oracle.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,12 +28,18 @@ public class BankCityServiceImpl implements BankCityService {
 	}
 
 	@Override
+	public Map<Integer, BankCity> mapAllItems() {
+		return bankCityDao.mapAllItems();
+	}
+
+	@Override
 	public int insertBankCity(BankCity bankCity) {
 		LocalDateTime now = LocalDateTime.now();
 		bankCity.setInsertTime(now);
 		bankCity.setEditor(bankCity.getCreator());
 		bankCity.setUpdateTime(now);
-		return bankCityDao.insertBankCity(bankCity);
+		bankCityDao.insertBankCity(bankCity);
+		return 1;
 	}
 
 	@Override

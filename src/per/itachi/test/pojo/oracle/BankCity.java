@@ -1,9 +1,20 @@
 package per.itachi.test.pojo.oracle;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class BankCity {
+/**
+ * 使用spring-cache的缓存一个类需要序列化，否则会报异常<br/> 
+ * java.io.NotSerializableException: per.itachi.test.pojo.oracle.BankCity<br/> 
+ * org.springframework.core.serializer.support.SerializationFailedException: Failed to serialize object using DefaultSerializer<br/> 
+ * */
+public class BankCity implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1250458885710866892L;
+
 	private int id;
 	
 	private String code;

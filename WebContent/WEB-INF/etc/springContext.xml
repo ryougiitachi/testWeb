@@ -23,11 +23,13 @@
 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
 	</context:component-scan>
 	<context:component-scan base-package="per.itachi.test.service"></context:component-scan>
+	<!-- 里面有一个后面的文件依赖，启动居然不报错，看来spring会把autowired先留着最后注入 -->
+	<context:component-scan base-package="per.itachi.test.container.spring"></context:component-scan>
 	
 	<!-- spring不能加载直接出现多次context:property-placeholder，想要这么用就得加ignore-unresolvable=true;
 		context:property-placeholder元素等价于加载org.springframework.beans.factory.config.PropertyPlaceholderConfigurer
 	 -->
-	<context:property-placeholder location="/WEB-INF/etc/jdbc.properties" ignore-unresolvable="true"/><!-- classpath:jdbc.properties -->
-	<context:property-placeholder location="/WEB-INF/etc/jms-rabbitmq.properties" ignore-unresolvable="true"/>
+	<context:property-placeholder location="/WEB-INF/etc/jdbc.properties" ignore-unresolvable="true" system-properties-mode="NEVER" /><!-- classpath:jdbc.properties -->
+	<context:property-placeholder location="/WEB-INF/etc/jms-rabbitmq.properties" ignore-unresolvable="true" system-properties-mode="NEVER" />
 
 </beans>
