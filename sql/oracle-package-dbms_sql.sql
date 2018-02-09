@@ -1,6 +1,9 @@
 --参考文章链接
 --http://zhangzhongjie.iteye.com/blog/1948093
+--http://blog.csdn.net/G15738290530/article/details/51819995
 
+--按照oracle的说法这是一种传统的执行sql方式，自从9i及其以后版本已经被execute_immediate语句大部分代替，但这个包本身在一些功能的实现上仍然有着不可取代的地位。
+--可以到这个地址查找源码http://www.psoug.org
 --用途：一般可以用来执行游标，和传统的语句执行游标不同，dbms_sql包是通过调用oracle包中的函数执行游标。
 --使用该包执行游标需要以下步骤：
 --01.DBMS_SQL.OPEN_CURSOR();					打开游标，返回一个integer的数字作为游标句柄
@@ -11,7 +14,7 @@
 --06.DBMS_SQL.FETCH_ROWS();
 --07.DBMS_SQL.COLUMN_VALUE();				需要返回值的时候从游标当中取出返回值
 --08.DBMS_SQL.CLOSE_CURSOR();				关闭游标
---
+
 --使用该包执行查询
 --查询返回单列单行的例子
 DECLARE 
@@ -41,7 +44,8 @@ EXCEPTION
 	WHEN OTHERS THEN 
 		DBMS_SQL.CLOSE_CURSOR(V_CURSOR_ID);
 END;
-、
+/
+
 --查询返回单列多行的例子
 --CALL PRC_TEST_DBMS_SQL('SELECT USER_ID, USERNAME, CDATE FROM T_USER WHERE CDATE <= :CDATE');
 CREATE OR REPLACE PROCEDURE PRC_TEST_DBMS_SQL(PV_SQL IN VARCHAR2) 
@@ -81,8 +85,9 @@ EXCEPTION
 		END IF;
 END; 
 /
+
 --执行增删改语句的时候返回结果集
---和类似COLUMN类似，也分为VALUE和ARRAY
+--与execute不同的是该包似乎会自动提交事务
 --执行单行操作
 CREATE OR REPLACE FUNCTION FUN_TEST_DBMS_SQL(PV_USERNAME IN VARCHAR2) 
 	--返回USER_ID
@@ -97,6 +102,7 @@ BEGIN
 	V_CURSOR_ID = DBMS_SQL.OPEN_CURSOR();
 	DBMS_SQL.PARSE_CURSOR(V_CURSOR_ID, V_SQL, DBMS_SQL.NATIVE);
 	--和列值一样，想要获取绑定变量也是上面放一遍下面放一遍，不知道为什么这么耦合
+	--和类似COLUMN类似，也分为VALUE和ARRAY
 	DBMS_SQL.BIND_VARIABLE(V_CURSOR_ID, 'USER_ID', V_USER_ID);
 	DBMS_SQL.BIND_VARIABLE(V_CURSOR_ID, 'USERNAME', PV_USERNAME);
 	DBMS_SQL.EXECUTE(V_CURSOR_ID);
@@ -113,6 +119,7 @@ EXCEPTION
 		RETURN 0;--异常处理块中不需要返回值？
 END FUN_TEST_DBMS_SQL;	--写不写都行
 /
+
 --执行多行操作
 CREATE OR REPLACE PROCEDURE PRC_TEST_DBMS_SQL(PV_USERNAME IN DBMS_SQL.NUMBER_TABLE) 
 IS 
@@ -139,3 +146,6 @@ EXCEPTION
 		END IF;
 END PRC_TEST_DBMS_SQL;	--写不写都行
 /
+
+--在执行动态sql语句时，应该选择dbms_sql还是execute_immediate的区别于取舍
+--http://blog.csdn.net/tswisdom/article/details/7313805
