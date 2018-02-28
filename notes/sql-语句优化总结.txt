@@ -1,0 +1,95 @@
+原则
+优化sql语句的目的是为了提高查询效率，要达成这个目的通常要避免全表扫描，所以尽可能地让执行计划走访问索引是优化sql语句常用的解决思路。如果修改了某条sql语句导致查询效率下降或者全表扫描，就要考虑是否该语句没有访问索引，可以修改查询条件或者适当的修改新建索引。无论是修改查询条件还是修改新建索引，都应该从where或者order-by语句中涉及的列入手。
+本文讨论条件是在生产环境的优化场景，以尽可能访问索引或者新建必要索引为前提，自己试着玩，某一列字段没有索引而且没有打算在该列新建索引，不在考虑范围内。
+
+疑点：
+1-oracle唯一可空单列索引可以插入多行空值？（因为索引不存储null值）
+2-oracle唯一可空复合索引可插入多行皆空行，但不可以插入单列空单列等值行？
+3-唯一索引与有唯一约束的普通索引是否一样？（不一样，详见oracle-index.sql里面的例子）
+全局哈希主键索引也是排序的？
+is not null是有可能走索引的，在该列有索引并且数值不全为null的情况下
+参考文章
+http://blog.csdn.net/leshami/article/details/7437561
+
+查询可空索引列null值
+解决思路
+1-建立组合索引
+2-建立函数索引
+解决过程
+1-create index idx_test_null on t_test_null(null_id, 1);
+相当于建立了一个以id和常量1为索引列的组合索引，当走到该列的时候会以范围查询扫描，range scan。
+查询select count(*) from t_test_null where null_id is null;
+2-create index idx_test_null on t_test_null(decode(null_id, null, 1));
+建立函数索引，当id列为null的时候索引将存储常量1，可以统计到null的列；有个缺点是会统计到真正为1的列，也许可以换成-1之类的数值，同样是范围扫描。
+两种解决方案，如果不方便修改查询语句可以采用第一种，方便修改的可以用第二种。
+查询select count(*) from t_test_null where decode(null_id, null, -1) = -1;
+参考文章
+http://blog.csdn.net/royzhang7/article/details/72884914
+
+一些通用的优化点
+1-复合索引
+尽量既有的所有字段都算上，这样可以少建索引
+2-不要使用不等于符号<>/!=，容易使索引失效(已验证)
+可以用or代替(待验证)
+3-is null / is not null将会使索引失效
+并不这么绝对，可通过建立复合索引函数索引的方式规避。
+4-in / not in会使索引失效
+并不这么绝对，in里面如果有多个值或者单值可能会执行范围扫描，如果是单值并且该列有唯一索引可以进行唯一扫描；in众多数值情况执行计划会多一步 INLIST ITERATOR；
+相比下，not in确实容易导致索引失效，类似于不等于。
+替换方式between / exist / left join
+left join替换in
+如SQL:SELECT id FROM A WHERE num in(select num from B) 优化成：SELECT id FROM A LEFT JOIN B ON A.num = B.num;(待验证)
+5-避免在where子句中等号左侧运算或者函数表达式(无函数索引情况)，否则容易使索引失效。
+6-不要在select中使用星号，否则将导致执行器查询数据字典获取列，增加了隐式执行步骤，返回多余字段也导致查询效率下降。
+7-使用“临时表”存储中间结果
+不知道这个临时表是不是真正意义上的。
+8-分页常用优化
+9-union与union-all
+union在返回结果集的时候会进行唯一性过滤操作，这涉及到了排序去重，会增加资源的消耗并且影响查询效率，如果对返回结果没有要求，或者返回结果无重复数据尽量使用union-all。
+10-内连接，左右外连接，子查询
+自查询效率小于外链接，尽量用连接代替子查询，包括exists子句，连接的时候用小表驱动大表，也就是说小表尽量在左边。
+11-用exist代替in
+in存于内存之中遍历，只执行一次，exists会查询数据库，如果子句中数据比较大的时候适合用exists，子句数据小的时候适合用in。
+参考文章
+https://www.cnblogs.com/parryyang/p/5711537.html
+
+like优化
+like通常用于模糊匹配字符串的查询条件，如果其它类型字段索引列最好不要用，因为可能导致隐式转换使得索引失效。如果必须在索引列使用like，尽量不要用like"%adc%"句式，这将导致索引失效。
+like模糊查询访问索引分为两种情况：前置模糊查询，后置模糊查询。
+1-前置模糊查询
+指定有限数量的字段(估计不能太短)，查询的时候用以下句式就可以访问索引
+AGENT_NAME LIKE 'ABCDE%'
+2-后置模糊查询
+相对麻烦一些，需要用reserve函数新建函数索引，将该字段以反转的形式存储到索引之中，模糊查询的时候也要加该函数，用以下句式
+RESERVE(AGENT_NAME) LIKE RESERVE('%XYZ');
+参考文章
+https://www.cnblogs.com/parryyang/p/5711537.html
+
+分页aql
+在oracle中，一般的分页查询是这样的：
+二层嵌套
+select a1.* from (select student.*,rownum rn from student where rownum <=1000 ORDER BY ID) a1 where rn >=500;
+三层嵌套
+SELECT * FROM 
+	(
+		SELECT a.*, ROWNUM rn
+		FROM (SELECT * FROM table_name ORDER BY ID) a
+		WHERE ROWNUM <= 40
+	)
+WHERE rn >= 21
+在oracle11g中测试，一个表有10亿数据，分页到千万之后的数据每次一百，如果用主键排序并且主键索引是全局哈希所系，二层比三层快很多，因为执行计划中三层嵌套最内层会对所有十亿数据排序，二层只会取前一千万(数据依然很多)。
+三层嵌套比较多，可能是因为最内层表是用来替换的，通常最内层语句是用来替换的，很少会出现查询一个十亿数据量表的所有数据情况。
+在MYSQL中可以使用LIMIT子句执行分页
+SELECT A.* FROM TESTING ORDER BY ID LIMIT 5;
+SELECT A.* FROM TESTING ORDER BY ID LIMIT 0, 5;
+SELECT A.* FROM TESTING ORDER BY ID LIMIT 5, 10;
+需要把LIMIT子句放到最后
+oracle12c新增了自带分页语句
+在语句的最后加上
+FETCH FIRST 5 ROWS ONLY;with ties
+OFFSET 5 ROWS FETCH NEXT 5 ROWS ONLY;with ties
+FETCH FIRST N PERCENT ROWS ONLY;with ties
+执行计划里面只有一个view，会有一个新的计划项WINDOW SORT PUSHED RANK
+关于ORACLE分页语句优化的设想
+假设一个大表需要分页查询，并且有排序主键索引，并且主键索引按照业务逻辑排序，和CDATE的索引。后一页查询获取前一页最后一条数据主键，用ROWNUM滑动分页窗口，可能需要编程语言控制此项。
+SELECT A.* FROM TESTING WHERE ID >= 1231231213 AND ROWNUM <= 100 ORDER BY ID;
