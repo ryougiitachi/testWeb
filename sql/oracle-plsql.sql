@@ -8,3 +8,4 @@ DECLARE
 BEGIN 
 END;
 /
+--如果与普通sql混用会涉及上下文切换。

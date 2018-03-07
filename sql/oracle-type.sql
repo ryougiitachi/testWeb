@@ -67,7 +67,7 @@ BEGIN
 	T_COLLECTION(1000).USER_ID := 1000;
 	T_COLLECTION(1000).USERNAME := 'MEDUSA';
 	vN := MyTab.First;
-	For varR In vN..MyTab.count					-----vN..MyTab.count ?
+	For varR In vN..MyTab.count					-----vN..MyTab.count or MyTab.LAST ?
 	Loop
 		DBMS_OUTPUT.PUT_LINE(vN ||'   '||MyTab(vN).rno||'   '||MyTab(vN).rname||'   '||MyTab(vN).rsal);
 		vN := MyTab.Next(vN);
@@ -99,7 +99,7 @@ UPDATE table_name SET var_col_name = VARRAY_PRIMITIVE('xxx','xxxxxx') WHERE expr
 
 
 --Oracle的数据集合类型，分三种：
---Varray：固定长度（其他方法可扩展），连续的数组。对应其他程序中的数组。
+--Varray：变量数组，定义是需要指定最大长度，使用时可以扩展，但是不能超过最大长度，连续的数组。对应其他程序中的数组。
 --Nested table：长度不固定，不连续。对应其他程序中的set，list等。
 --Associative Arrays（Known as index-by table）：有索引的集合。对应其他程序中的hashMap。
 --这三种都可以在sql环境或者plsql中定义通过TYPE/CREATE TYPE定义。
