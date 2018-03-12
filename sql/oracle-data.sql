@@ -1,5 +1,6 @@
 --为用户新建表空间
 --oracle分为“表段区块”四层逻辑(table/segment/extent/block)，表空间是唯一对应磁盘文件的逻辑层次，一个表空间可以对应不同的文件而一个文件只能属于一个表空间。
+--参考文章：http://blog.itpub.net/17203031/viewspace-682003/ 表空间段区块之间的关系。
 --ORACLE分区策略早先为数据字典管理模式DMT，已过时，现在默认为本地管理模式LMT。
 --SEGMENT SPACE MANAGEMENT AUTO，临时表空间不能用自动段管理，用了会报错
 --参考文章：http://blog.sina.com.cn/s/blog_3cae66560102w0vk.html
