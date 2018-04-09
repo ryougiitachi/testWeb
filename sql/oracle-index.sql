@@ -1,3 +1,41 @@
+--索引类型与原理机制
+--参考文章
+--https://www.cnblogs.com/iliuyuet/p/4431464.html
+--http://orange5458.iteye.com/blog/1165319
+--从原理机制角度可以分为普通B树索引(B-tree)、位图索引(Bitmap)、哈希索引(Hash)、聚簇索引(Cluster)
+--B树索引(B-tree)
+--虽然包括这篇文章在内的很多文章都说oracle索引属于b-tree索引，但从存储特点来看更加接近于B+-TREE；两者都是方便与外部查询的数据查询存储结构，两者都是多阶平衡树并且有序，叶子节点都在同一层；但是相比B-TREE，后者每个节点元素数和子节点数都是一样的(前者子节点数总是比元素数多一个)，所有节点都存储父节点对应元素信息，由此保证了子节点与元素数一致，而且非叶子节点不存储真正的数据元素，所有数据都要到叶子节点查询，所以每次的查询次数是一样的，保证了每次读取数据块的一致性。
+--https://zhuanlan.zhihu.com/p/27700617
+--根节点块与分支节点块类似，每个索引条目有两个字段，一个存该分支节点下的最小值，即键值最小值，一个存所链接的索引块地址，有四个字节(?)，一个节点块能存的索引条目数量由键值长度与索引块大小决定。叶子节点存储键值最小值和对应数据行的ROWID，其中rowid，如果是普通索引或者本地索引，占6字节，如果是全局索引占10字节。
+--普通索引和唯一索引基本都是这种树模型，默认是升序排列，也可以修改成降序。
+--位图索引(Bitmap)
+--位图索引也是一个B+-TREE模式，会为每一个数据键值维护一个元素，该元素连接到一个数据块把所有的数据行以bit的的形式0/1标记。
+--众所周知，位图索引适合在有限数值的列上创建，例如性别一类，不适合主键一类重复值少的列，因为插入更新删除的时候会对每个键值的位图操作一遍，操作成本比较大。
+--如果表有分区怎么办？
+--创建位图索引语句
+--聚簇索引(Cluster)
+--与普通索引不同，聚簇索引会把数据表里面的数据按照指定形式排序，所以每个表只能创建一个聚簇索引。
+CREATE BITMAP INDEX IDX_USER_GENDER ON T_USER(GENDER);
+--全局分区索引
+--创建全局分区索引语句
+CREATE INDEX IDX_USER_CDATE ON T_USER(CDATE)
+TABLESPACE TBS_MYBATIS_IDX 
+GLOBAL 
+PARTITION BY RANGE (CDATE) 
+(
+	PARTITION PI_USER_CDATE_201709 values  less than (to_date('201710','YYYYMM')) ,
+	PARTITION PI_USER_CDATE_201710 values  less than (to_date('201711','YYYYMM')) ,
+	PARTITION PI_USER_CDATE_201711 values  less than (to_date('201712','YYYYMM')) ,
+	PARTITION PI_USER_CDATE_201712 values  less than (to_date('201801','YYYYMM')) ,
+	PARTITION PI_USER_CDATE_201801 values  less than (to_date('201802','YYYYMM')) ,
+	PARTITION PI_USER_CDATE_MAX values  less than (maxvalue)
+);
+--在全局分区索引上做添加合并时只能是哈希类型，若对range类型进行此操作则会提示ORA-14640；
+--对于range类型索引可是使用split操作；
+ALTER INDEX IDX_USER_CDATE SPLIT PARTITION PI_USER_CDATE_201709 AT (TO_DATE('201709', 'YYYYMM')) INTO (PARTITION PI_USER_CDATE_201708, PARTITION PI_USER_CDATE_201709);
+ALTER INDEX IDX_USER_CDATE SPLIT PARTITION PI_USER_CDATE_MAX AT (TO_DATE('201803', 'YYYYMM')) INTO (PARTITION PI_USER_CDATE_201802, PARTITION PI_USER_CDATE_MAX);
+
+
 --测试：唯一索引和在有唯一性约束的列上创建普通索引是否有区别？
 --结果：某个有唯一性约束的列在创建约束的时候会自动创建唯一性索引，所以该列索引和普通索引肯定有区别，问题是创建了唯一性索引之后是否还能在该列创建普通索引(不能)。创建唯一索引之后数据库会把该表rowid存入索引中，精确查询数据时总是会最终引导到rowid。
 
