@@ -23,11 +23,11 @@ TABLESPACE TBS_MYBATIS_IDX
 GLOBAL 
 PARTITION BY RANGE (CDATE) 
 (
-	PARTITION PI_USER_CDATE_201709 values  less than (to_date('201710','YYYYMM')) ,
-	PARTITION PI_USER_CDATE_201710 values  less than (to_date('201711','YYYYMM')) ,
-	PARTITION PI_USER_CDATE_201711 values  less than (to_date('201712','YYYYMM')) ,
-	PARTITION PI_USER_CDATE_201712 values  less than (to_date('201801','YYYYMM')) ,
-	PARTITION PI_USER_CDATE_201801 values  less than (to_date('201802','YYYYMM')) ,
+	PARTITION PI_USER_CDATE_201709 values  less than (to_date('201710','YYYYMM')), 
+	PARTITION PI_USER_CDATE_201710 values  less than (to_date('201711','YYYYMM')), 
+	PARTITION PI_USER_CDATE_201711 values  less than (to_date('201712','YYYYMM')), 
+	PARTITION PI_USER_CDATE_201712 values  less than (to_date('201801','YYYYMM')), 
+	PARTITION PI_USER_CDATE_201801 values  less than (to_date('201802','YYYYMM')), 
 	PARTITION PI_USER_CDATE_MAX values  less than (maxvalue)
 );
 --在全局分区索引上做添加合并时只能是哈希类型，若对range类型进行此操作则会提示ORA-14640；
