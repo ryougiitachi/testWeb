@@ -14,9 +14,10 @@ rem 停止默认的windows服务Redis
 #redis-server --service-stop
 rem 指定参数安装redis服务，默认端口是6379
 rem 这样写应该是错的
-#redis-server --service-install --service-name RedisService01 --port 10001 redis.windows-service.conf
-#redis-server --service-install --service-name RedisService02 --port 10002 redis.windows-service.conf
+rem redis-server --service-install --service-name RedisService01 --port 10001 redis.windows-service.conf
+rem redis-server --service-install --service-name RedisService02 --port 10002 redis.windows-service.conf
 rem 这样应该是对的
+rem 在windows系统中，如果没有相应的service-name，再执行一下命令后会自动创建一个 
 #redis-server --service-install redis.windows-service.conf --service-name RedisService03 --port 10003
 rem 启动指定的windows服务
 #redis-server --service-start --service-name RedisService01
@@ -25,6 +26,8 @@ rem 停止指定的windows服务
 rem 卸载指定的windows服务
 #redis-server --service-uninstall --service-name RedisService01
 
+rem redis配置文件中日志的配置logfile是个很神奇的设定
+rem 
 
 rem 具体可参考http://www.runoob.com/redis/redis-keys.html
 rem redis-cli主要用于登陆redis服务器，默认没有密码
