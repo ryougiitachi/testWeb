@@ -8,7 +8,7 @@ rem 参考文章：https://www.cnblogs.com/s648667069/p/6401463.html
 rem 启动rabbitmq服务，在windows下默认会启动新建一个名为RabbitMQ的服务
 #rabbitmq-service.bat start
 #rabbitmq-service.bat stop
-rem 创建虚拟主机vhostRabbit，重复添加会报错Error: vhost_already_exists: vhostRabbit
+rem 创建虚拟主机vhostRabbit，重复添加会报错Error: vhost_already_exists: vhostRabbit；用户与虚拟主机貌似互相独立；
 #rabbitmqctl add_vhost vhostRabbit
 rem 添加用户，重复添加会报错Error: user_already_exists: testadmin
 #rabbitmqctl add_user testadmin testadmin123
