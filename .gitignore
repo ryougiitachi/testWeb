@@ -1,0 +1,7 @@
+/build/
+/.classpath
+/.project
+/.settings/
+/.tern-project
+/WebContent/log/
+/WebContent/WEB-INF/lib/
