@@ -31,6 +31,11 @@ public class TestingSessionListener implements HttpSessionListener {
 		//But into synchronised block, it is serial processing with less efficiency.
 		//It all depends.
 		logger.debug("After creating, the current number of session is {}", countOfSession);
+		//check jvm settings
+		Runtime runtime = Runtime.getRuntime();
+		logger.debug("After creating, the max memory Xmx is {}", runtime.maxMemory());
+		logger.debug("After creating, the total memory(Xms) is {}", runtime.totalMemory());
+		logger.debug("After creating, the free memory(Xms) is {}", runtime.freeMemory());
 	}
 
 	@Override
@@ -40,5 +45,10 @@ public class TestingSessionListener implements HttpSessionListener {
 			--countOfSession;//need to check whether count is less than 0?
 		}
 		logger.debug("After destroying, the current number of session is {}", countOfSession);
+		//check jvm settings
+		Runtime runtime = Runtime.getRuntime();
+		logger.debug("After creating, the max memory Xmx is {}", runtime.maxMemory());
+		logger.debug("After creating, the total memory(Xms) is {}", runtime.totalMemory());
+		logger.debug("After creating, the free memory(Xms) is {}", runtime.freeMemory());
 	}
 }

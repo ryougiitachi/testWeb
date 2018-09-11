@@ -78,9 +78,14 @@
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
 			/WEB-INF/etc/springContext.xml,
-			/WEB-INF/etc/springContext-orm.xml
+<!-- 			/WEB-INF/etc/springContext-orm-hibernate.xml, -->
+			/WEB-INF/etc/springContext-orm-mybatis.xml,
+<!-- 			/WEB-INF/etc/springContext-orm-*.xml, -->
+			/WEB-INF/etc/springContext-jms-rabbitmq.xml,
+			/WEB-INF/etc/springContext-cache-redis.xml,
 		</param-value>
 	</context-param>
+	
 	
 	<!-- Order of loading is listener > filter > servlet -->
 	<!-- Order of executing is listener > filter > servlet -->
@@ -130,7 +135,12 @@
 		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
 	</listener>
 
+
 	<!-- filter -->
+	<!-- 
+		在filter-mapping中配置不存在的filter-name将导致以下异常而不能启动tomcat
+		 java.lang.IllegalArgumentException: Filter mapping specifies an unknown filter name OpenSessionInViewFilter
+	 -->
 	<filter>
 		<filter-name>TestingFilter</filter-name>
 		<filter-class>per.itachi.test.filter.TestingFilter</filter-class>
@@ -139,6 +149,29 @@
 		<filter-name>TestingFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
+	<!-- 
+		spring+hibernate配合使用时候对于数据延迟加载session提前关闭的解决方案，也可以使用OpenSessionInViewInterceptor拦截器
+		解决了could not initalize proxy - no Session问题 
+		OpenSessionInViewFilter的主要功能是用来把一个Hibernate Session和一次完整的请求过程对应的线程相绑定。
+		目的是为了实现"Open Session in View"的模式。例如： 它允许在事务提交之后延迟加载显示所需要的对象。
+		OpenSessionInViewFilter 过滤器将 Hibernate Session 绑定到请求线程中，它将自动被 Spring 的事务管理器探测到。
+		所以 OpenSessionInViewFilter 适用于 Service 层使用HibernateTransactionManager 或 JtaTransactionManager 进行事务管理的环境，
+		也可以用于非事务只读的数据操作中。
+		存在副作用，在整个request期间session都是open状态，该数据库连接一直被占用，在有限的连接中若某次处理时间过长，讲不能够及时响应。
+		session生命周期可能会比事务长。
+		公网上内容多流量大的网站请慎用。
+		如果使用了struts2需要放到StrutsPrepareAndExecuteFilter之前才可以生效(?)
+		如果没有sessionFactory启动的时候不会报错，涉及到数据库操作应该会报错
+	-->
+<!-- 	<filter> -->
+<!-- 		<filter-name>OpenSessionInViewFilter</filter-name> -->
+<!-- 		<filter-class>org.springframework.orm.hibernate5.support.OpenSessionInViewFilter</filter-class> -->
+<!-- 	</filter> -->
+<!-- 	<filter-mapping> -->
+<!-- 		<filter-name>OpenSessionInViewFilter</filter-name> -->
+<!-- 		<url-pattern>/springmvc/*</url-pattern> -->
+<!-- 	</filter-mapping> -->
+	
 	
 	<!-- It is said that servlet just matches once? precise matching pattern?-->
 	<servlet>
@@ -160,15 +193,19 @@
 		http://www.cnblogs.com/51kata/p/5152400.html
 		精确匹配(非/和不带*的)、扩展名匹配(*.do)、路径匹配(/spring/*)、任意匹配
 		扩展名与路径互斥，启动时报错
-		优先级：精确 > 最长路径 > 扩展名
+		优先级：精确 > 最长路径 > 扩展名 > /(默认匹配路径)
 	-->
-<!-- 	<servlet-mapping> -->
-<!-- 		<servlet-name>TestingServlet</servlet-name> -->
-<!-- 		<url-pattern>/</url-pattern> -->
-<!-- 	</servlet-mapping> -->
+	<servlet-mapping>
+		<servlet-name>TestingServlet</servlet-name>
+		<url-pattern>/</url-pattern>
+	</servlet-mapping>
+	<!-- 
+		springmvc会自动给路径匹配加上url-pattern中配置的路径前缀的，所以在RequestMapping中不能加前缀部分 
+	-->
 	<servlet-mapping>
 		<servlet-name>springmvc</servlet-name>
 		<url-pattern>/springmvc/*</url-pattern>
+		<url-pattern>/mybatis/*</url-pattern>
 	</servlet-mapping>
 
 	<session-config>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="per.itachi.test.dao.oracle.BankCityDao" >
+	<resultMap id="tblBankCityMapper" type="per.itachi.test.pojo.oracle.BankCity">
+		<!-- jdbcType属性对应这个枚举类org.apache.ibatis.type.JdbcType里面的数值 -->
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="CODE" property="code" jdbcType="VARCHAR" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" /><!-- jdbcType配置成DATE竟然不报错，结果也没错 -->
+		<result column="STATUS" property="status" jdbcType="VARCHAR" />
+		<result column="CREATOR" property="creator" jdbcType="VARCHAR" />
+		<result column="INSERT_TIME" property="insertTime" jdbcType="DATE" />
+		<result column="EDITOR" property="editor" jdbcType="VARCHAR" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="DATE" />
+	</resultMap>
+	<resultMap id="mapBankCityMapper" type="java.util.HashMap">
+		<!-- jdbcType属性对应这个枚举类org.apache.ibatis.type.JdbcType里面的数值 -->
+		<id column="ID" property="id" jdbcType="INTEGER" />
+		<result column="CODE" property="code" jdbcType="VARCHAR" />
+		<result column="NAME" property="name" jdbcType="VARCHAR" /><!-- jdbcType配置成DATE竟然不报错，结果也没错 -->
+		<result column="STATUS" property="status" jdbcType="VARCHAR" />
+		<result column="CREATOR" property="creator" jdbcType="VARCHAR" />
+		<result column="INSERT_TIME" property="insertTime" jdbcType="DATE" />
+		<result column="EDITOR" property="editor" jdbcType="VARCHAR" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="DATE" />
+	</resultMap>
+	<!-- parameterMap貌似可以和resultMap的id是一样的，不冲突 -->
+	<parameterMap id="tblBankCityMapper" type="per.itachi.test.pojo.oracle.BankCity">
+		<parameter property="id" jdbcType="INTEGER" />
+		<parameter property="code" jdbcType="VARCHAR" />
+		<parameter property="name" jdbcType="VARCHAR" />
+		<parameter property="status" jdbcType="VARCHAR" />
+		<parameter property="creator" jdbcType="VARCHAR" />
+		<parameter property="insertTime" jdbcType="DATE" />
+		<parameter property="editor" jdbcType="VARCHAR" />
+		<parameter property="updateTime" jdbcType="DATE" />
+	</parameterMap>
+
+	<sql id="Base_Column_List" > ID, CODE, NAME, STATUS, CREATOR, INSERT_TIME, EDITOR, UPDATE_TIME </sql>
+	
+	<!-- 
+		parameter是这种基本类型的时候参数名称可能随便写，和对应的接口形参名称无关。
+	 -->
+	<select id="getBankCityByID" resultMap="tblBankCityMapper" parameterType="int" >
+		SELECT 
+			<include refid="Base_Column_List" /> 
+		FROM T_BANK_CITY 
+		WHERE ID = #{userID,jdbcType=INTEGER}
+	</select>
+	<select id="getAllItems" resultMap="tblBankCityMapper">
+		SELECT 
+			<include refid="Base_Column_List" /> 
+		FROM T_BANK_CITY ORDER BY ID
+	</select>
+	<select id="mapAllItems" resultMap="tblBankCityMapper">
+		SELECT 
+			<include refid="Base_Column_List" /> 
+		FROM T_BANK_CITY ORDER BY ID
+	</select>
+	
+	<!-- 在注入模式下，insert函数返回值似乎只能是int/void，若返回类似乎会异常 -->
+	<insert id="insertBankCity" parameterMap="tblBankCityMapper">
+		<selectKey resultType="int" keyProperty="id" order="BEFORE">
+			SELECT SEQ_BANK_CITY_ID.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO T_BANK_CITY(
+			<include refid="Base_Column_List" />
+		) VALUES (#{id}, #{code}, #{name}, #{status}, #{creator}, #{insertTime}, #{editor}, #{updateTime})
+	</insert>
+	<update id="updBankCityByID" parameterType="per.itachi.test.pojo.oracle.BankCity">
+		UPDATE T_BANK_CITY 
+		<set>
+			<if test="name!=null and name!=''">NAME=#{name}, </if>
+			<if test="status!=null and status!=''">STATUS=#{status}, </if>
+			<!-- 正常情况下，新建人员与时间是不能改的 -->
+<!-- 			<if test="creator!=null and creator!=''">creator=#{creator}, </if> -->
+<!-- 			<if test="insertTime!=null and insertTime!=''">INSERT_TIME=#{insertTime}, </if> -->
+			<!-- and不能用&&代替，要不加载时会报错 -->
+			<if test="editor!=null and editor!=''">EDITOR=#{editor}, </if>
+			UPDATE_TIME=SYSDATE, 
+		</set>
+		WHERE ID = #{id,jdbcType=INTEGER}
+	</update>
+	<delete id="delBankCityByID" parameterType="int">
+		DELETE FROM T_BANK_CITY WHERE ID = #{id,jdbcType=INTEGER}
+	</delete>
+</mapper>

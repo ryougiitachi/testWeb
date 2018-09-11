@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns="http://ehcache.org"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xsi:schemaLocation="http://ehcache.org http://ehcache.org/ehcache.xsd">
+	
+	<!-- 参考 http://www.cnblogs.com/cielosun/p/6793962.html -->
+	<diskStore path="cache"/>
+	<!--没有特殊设置时系统默认使用此设置-->
+	<defaultCache
+			maxElementsInMemory="1000"
+			eternal="false"
+			timeToIdleSeconds="120"
+			timeToLiveSeconds="120"
+			overflowToDisk="true"
+			maxElementsOnDisk="10000"
+			diskPersistent="false"
+			diskExpiryThreadIntervalSeconds="120"
+			memoryStoreEvictionPolicy="LRU"
+	/>
+	<!--想使用查询缓存，这两个类需要添加-->
+	<cache name="org.hibernate.cache.spi.UpdateTimestampsCache"
+			maxElementsInMemory="5000"
+			eternal="true"
+			overflowToDisk="true" />
+	<cache name="org.hibernate.cache.internal.StandardQueryCache"
+			maxElementsInMemory="10000"
+			eternal="false"
+			timeToLiveSeconds="120"
+			overflowToDisk="true" />
+	<cache name="per.itachi.test.pojo.postgresql.User" 
+			maxElementsInMemory="2000" 
+			eternal="false"
+			timeToIdleSeconds="120" 
+			timeToLiveSeconds="120"
+			overflowToDisk="true" 
+			memoryStoreEvictionPolicy="LRU" />
+<!-- 	<cache name="cn.itcast.bean.Person"  -->
+<!-- 		maxElementsInMemory="100"     内存中最大允许存在的对象数量 -->
+<!-- 		eternal="false" 设置缓存中的对象是否永远不过期 -->
+<!-- 		overflowToDisk="true" 把溢出的对象存放到硬盘上 -->
+<!-- 		timeToIdleSeconds="300" 指定缓存对象空闲多长时间就过期,过期的对象会被清除掉 -->
+<!-- 		timeToLiveSeconds="600" 指定缓存对象总的存活时间 -->
+<!-- 		diskPersistent="false"/>当jvm结束是是否持久化对象 -->
+	<!-- 
+		timeToIdleSeconds与timeToLiveSeconds的比较 
+		timeToIdleSeconds与timeToLiveSeconds可以只指定其中一个，如果两个都指定的话，虽然都会起作用，但需要live大于idle才有意义；
+		idle相当于每次命中后可以存活的时间，live则是最多可以存活的时间；即一个缓存命中后到了live时间的话，即使还没到idle时间也失效。
+	 -->
+	<!-- 
+		memoryStoreEvictionPolicy内存缓存数超过最大数量时候的策略：
+		LLU/LRU/FIFO
+		LFU least frequently used，hit数最少的失效 
+		LRU least recently used，最近使用时间戳离当前时间最远的失效 
+		FIFO first in first out，先进先出策略 
+	 -->
+</ehcache>

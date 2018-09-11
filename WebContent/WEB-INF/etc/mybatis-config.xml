@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration 
+		PUBLIC "-//mybatis.org//DTD Config 3.0//EN" 
+		"http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 命名空间 给实体模型设置别名，这个是给mapper.xml的文件用的，有这个就可以直接用tblUser代替全类名的那一大长串了-->
+	<typeAliases>
+		<typeAlias alias="tblUser" type="per.itachi.test.pojo.oracle.User"/>
+	</typeAliases>
+ 
+	<!-- 
+		映射map 指定映射文件，可以在spring的orm配置文件中指定
+		在mybatis配置文件中只能以resource方式指定，如果要指定容器location要在spring配置文件中指定
+	 -->
+<!-- 	<mappers> -->
+<!-- 		<mapper resource="/WEB-INF/etc/mapping/mybatis/User.mapper.xml"></mapper> -->
+<!-- 	</mappers> -->
+</configuration>

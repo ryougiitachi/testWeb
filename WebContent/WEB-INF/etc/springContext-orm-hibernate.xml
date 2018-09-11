@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans 
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" 
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd  
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd  
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd  
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd 
+			http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+	<!-- spring注解自动注入 -->
+	<context:component-scan base-package="per.itachi.test.pojo.postgresql"></context:component-scan>
+
+	<!-- 引入外部属性文件 jndi? -->
+<!-- 	<context:property-placeholder location="/WEB-INF/etc/jdbc.properties" /> -->
+
+	<!-- 数据库连接配置 -->
+	<!-- 
+		因为在高并发的时候效率比较低下，所以现已不建议使用c3p0作为默认数据库连接池
+		参考文章：https://www.tuicool.com/articles/qayayiM
+		添加c3p0数据库连接池 bean
+		最好在destroy-method加上数据源关闭方法close，因为在tomcat7开始加入了内存泄漏检测，关闭tomcat时如果没有关闭数据源会报错：
+		WARNING: The web application [testWeb] appears to have started a thread named [C3P0PooledConnectionPoolManager
+		[identityToken->|]-] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+		WARNING: The web application [testWeb] appears to have started a thread named [C3P0PooledConnectionPoolManager
+		[identityToken->|]-HelperThread-#0~2] but has failed to stop it. This is very likely to create a memory leak. 
+		Stack trace of thread:
+		 com.mchange.v2.async.ThreadPoolAsynchronousRunner$PoolThread.run(ThreadPoolAsynchronousRunner.java:683) 
+	 -->
+<!-- 	<bean id="dataSourcePostgresql" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close"> -->
+<!-- 		<property name="driverClass" value="${jdbc.postgresql.driver}" /> -->
+<!-- 		<property name="jdbcUrl" value="${jdbc.postgresql.url}" /> -->
+<!-- 		<property name="user" value="${jdbc.postgresql.username}" /> -->
+<!-- 		<property name="password" value="${jdbc.postgresql.password}" /> -->
+		<!-- 每300秒检查所有连接池中的空闲连接 -->
+<!-- 		<property name="idleConnectionTestPeriod" value="300"></property> -->
+		<!-- 最大空闲时间,900秒内未使用则连接被丢弃。若为0则永不丢弃 -->
+<!-- 		<property name="maxIdleTime" value="900"></property> -->
+		<!-- 最大连接数 -->
+<!-- 		<property name="maxPoolSize" value="2"></property> -->
+<!-- 	</bean> -->
+	<!-- 
+		tomcat-jdbc是从7.0开始新加的用来取代dbcp的连接池，tomcat默认使用该连接池作为数据源，以下文章讲解了各个参数的意思。
+		参考文章：https://www.cnblogs.com/asoks/p/5321534.html
+		bean名字不能重复，否则启动报错 
+	 -->
+	<bean id="dataSourcePostgresql" class="org.apache.tomcat.jdbc.pool.DataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.postgresql.driver}" />
+		<property name="url" value="${jdbc.postgresql.url}" />
+		<property name="username" value="${jdbc.postgresql.username}" />
+		<property name="password" value="${jdbc.postgresql.password}" />
+		<property name="initialSize" value="5" />
+		<property name="minIdle" value="5" />
+		<property name="maxActive" value="10" /><!-- property名字不能重复，否则启动报错 -->
+		<property name="maxIdle" value="10" />
+	</bean>
+	<!-- 添加sessionFactory bean，注意，该类是Spring提供的 -->
+	<!-- I think it is better to use default(singleton) instead of scope="prototype" as scope -->
+	<bean id="hibernateSessionFactory" class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<!-- 注入连接池，包含了数据库用户名，密码等等信息 -->
+		<property name="dataSource" ref="dataSourcePostgresql" />
+
+		<!-- 配置Hibernate的其他的属性 -->
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.connection.autocommit">false</prop>
+				<!-- 开机自动生成表 -->
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<!-- 
+					Hibernate二级缓存配置参考
+				 -->
+				<!-- 指定二级缓存接口类，这是老版的配置参数 -->
+<!-- 				<prop name="cache.provider_class">org.hibernate.cache.EhCacheProvider</prop> -->
+				<!-- 从hibernate4开始二级缓存接口类配置使用以下键值 -->
+				<prop key="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory</prop>
+				<!-- 开启二级缓存 -->
+				<prop key="cache.use_second_level_cache">true</prop>
+				<!-- 打开查询缓存，可以让Query.list从二级缓存中取数据 -->
+				<prop key="cache.use_query_cache">true</prop>
+				<!-- 指定ehcache.xml配置文件位置 -->
+				<prop key="hibernate.cache.provider_configuration_file_resource_path">/WEB-INF/etc/ehcache.xml</prop>
+			</props>
+		</property>
+		<!-- 引用*.hbm.xml映射文件 -->
+<!-- 		<property name="mappingResources"> -->
+<!-- 			<list> -->
+<!-- 				<value>/WEB-INF/etc/mapping/User.hbm.xml</value> -->
+<!-- 			</list> -->
+<!-- 		</property> -->
+		<property name="mappingLocations">
+			<list>
+				<value>/WEB-INF/etc/mapping/hibernate/User.hbm.xml</value>
+			</list>
+		</property>
+		<!-- 引用*.hbm.xml映射文件夹 -->
+<!-- 		<property name="mappingDirectoryLocations"> -->
+<!-- 			<list> -->
+<!-- 				<value>/WEB-INF/etc/mapping</value> -->
+<!-- 			</list> -->
+<!-- 		</property> -->
+	</bean>
+	<bean id="trxMgr" class="org.springframework.orm.hibernate5.HibernateTransactionManager">
+		<property name="sessionFactory" ref="hibernateSessionFactory"></property>
+	</bean>
+	
+	<!-- 
+		Spring transaction management Spring事务管理 
+		tx:annotation-driven主要用于加载@Transactional(?)，需要在dao或者service添加注解
+		tx:advice通过AOP方式切面注入管理事务，需要配置aop:config启用Spring AOP切面
+		tx:annotation-driven与tx:advice二选一即可，没有必要都用(?)
+		spring事务管理原理的简单讲解 http://www.cnblogs.com/fjdingsd/p/5632949.html
+		事务四特性 ACID Atomic, consistency, isolation, durability
+		数据库中事务开始的标志，是在第一次执行DML语句，或者上一个事务结束再一次执行DML豫剧的时候。
+		对于select启用事务是因为某些多语句查询牵涉数据较多，为了保证事务一致性通常会打开事务在事务中查询，如果是短时间单一查询可以不用。
+	-->
+	<!-- transaction-manager doesn't make differences? -->
+<!-- 	<tx:annotation-driven transaction-manager="trxMgr" /> -->
+	<tx:advice id="trxAdvice" transaction-manager="trxMgr">
+		<tx:attributes>
+			<!-- tx:method中的属性除name以外皆非必须，
+				propagation 事务传播行为，默认值为REQUIRED，可在org.springframework.transaction.TransactionDefinition中查询
+				propagation 有可能是spring为了事务管理自创的机制，与数据库本身的功能无关。
+				isolation 事务隔离级别，默认值为DEFAULT(数据库的默认级别?)，可在org.springframework.transaction.TransactionDefinition中查询
+				timeout 事务超时时间，默认值为-1(不超时)，单位秒
+				read-only 事物是否只读，默认为false，若设置为只读则在处理增删改操作时候会报错失败(?)
+				rollback-for 触发回滚的异常，以逗号分隔
+				no-rollback-for 不触发回滚的异常，以逗号分隔
+				默认情况下，任何RuntimeException将触发回滚，任何检查异常不触发回滚。
+			-->
+			<tx:method name="add*" propagation="REQUIRED"/>
+			<tx:method name="insert*" propagation="REQUIRED"/>
+			<tx:method name="update*" propagation="REQUIRED"/>
+			<tx:method name="delete*" propagation="REQUIRED" />
+			<tx:method name="persist*" propagation="REQUIRED"/>
+			<tx:method name="save*" propagation="REQUIRED"/>
+			<tx:method name="test*" propagation="REQUIRED" read-only="true"/><!-- 配不配都一样？并不 -->
+			<tx:method name="select*" read-only="true"/>
+			<tx:method name="find*" read-only="true"/>
+			<tx:method name="get*" read-only="true"/>
+			<tx:method name="query*" read-only="true"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<!-- 
+		Spring AOP Spring面向页面编程
+		Spring AOP原理简介http://www.importnew.com/24305.html
+		在service层添加事务(?)
+	 -->
+	<aop:config expose-proxy="true">
+		<aop:pointcut expression="execution(public * per.itachi.test.service.postgresql.impl.*.*(..))" id="pointcut" />
+		<aop:advisor advice-ref="trxAdvice" pointcut-ref="pointcut" />
+	</aop:config>
+	
+	<!-- 配置open-session-in-view拦截器 -->
+	<mvc:interceptors>
+		<!-- 使用bean定义一个Interceptor，直接定义在mvc:interceptors根下面的Interceptor将拦截所有的请求；
+			所有的拦截器在web容器的filter之前执行；所谓全局拦截器应该是只能拦截DispatcherServlet中配置的路径(?)
+		 -->
+		<bean class="per.itachi.test.interceptor.spring.TestHandlerInterceptor"/>
+		<bean class="per.itachi.test.interceptor.spring.TestWebRequestInterceptor"/>
+		<!-- 有一个OpenSessionInterceptor不知道干什么用的(?) -->
+		<bean class="org.springframework.orm.hibernate5.support.OpenSessionInViewInterceptor">
+			<property name="sessionFactory" ref="hibernateSessionFactory"></property>
+		</bean>
+		<!-- 定义在mvc:interceptor下面的表示是对特定的请求才进行拦截的 -->  
+<!-- 		<mvc:interceptor> -->
+<!-- 			<mvc:mapping path="/springmvc/*"/>   -->
+<!-- 			<bean class="com.host.app.web.interceptor.LoginInterceptor"/> -->
+<!-- 		</mvc:interceptor> -->
+	</mvc:interceptors>
+</beans>
